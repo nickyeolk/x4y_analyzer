@@ -28,14 +28,15 @@ class AnalysisRequest(BaseModel):
         example="On-demand dog walking service with real-time GPS tracking",
     )
 
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "x_brand": "Uber",
                 "y_market": "Dog Walkers",
                 "description": "On-demand dog walking service with real-time GPS tracking",
             }
         }
+    }
 
 
 class AnalysisStatusRequest(BaseModel):

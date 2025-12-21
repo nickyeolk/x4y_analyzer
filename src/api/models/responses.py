@@ -5,6 +5,24 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
+class HealthResponse(BaseModel):
+    """Health check response."""
+
+    status: str = Field(..., description="Service status")
+    timestamp: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    version: Optional[str] = None
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "status": "healthy",
+                "timestamp": "2025-12-20T19:30:45.123Z",
+                "version": "1.0.0",
+            }
+        }
+    }
+
+
 class BrandDNAResponse(BaseModel):
     """Brand DNA analysis response."""
 
@@ -96,8 +114,8 @@ class AnalysisResponse(BaseModel):
     trace_url: Optional[str] = None
     langsmith_url: Optional[str] = None
 
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "analysis_id": "A-abc12345",
                 "correlation_id": "CID-def67890",
@@ -116,6 +134,7 @@ class AnalysisResponse(BaseModel):
                 },
             }
         }
+    }
 
 
 class StreamEvent(BaseModel):
@@ -125,14 +144,15 @@ class StreamEvent(BaseModel):
     data: Dict[str, Any] = Field(..., description="Event data")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "event": "agent_started",
                 "data": {"agent": "analyst", "status": "running"},
                 "timestamp": "2025-12-20T19:30:45.123Z",
             }
         }
+    }
 
 
 class ErrorResponse(BaseModel):
@@ -143,11 +163,12 @@ class ErrorResponse(BaseModel):
     correlation_id: Optional[str] = None
     analysis_id: Optional[str] = None
 
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "error": "Analysis failed: Invalid API key",
                 "error_type": "AuthenticationError",
                 "correlation_id": "CID-abc123",
             }
         }
+    }
