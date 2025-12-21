@@ -65,6 +65,15 @@ async def analyst_node(state: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Updated state with analyst insights
     """
+    # Increment loop count if this is a re-entry (skeptic rejected previous iteration)
+    if state.get("skeptic_critique") is not None:
+        state["loop_count"] = state.get("loop_count", 0) + 1
+        logger.info(
+            "analyst_loop_back",
+            loop_count=state["loop_count"],
+            reason=state.get("skeptic_critique", {}).get("loop_back_reason"),
+        )
+
     with trace_span("node.analyst", {"iteration": state.get("loop_count", 0)}):
         logger.info(
             "node_executing",

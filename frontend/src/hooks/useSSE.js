@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 /**
  * Custom hook for Server-Sent Events (SSE) streaming
  *
@@ -28,7 +28,7 @@ export function useSSE(url, body, shouldConnect = false) {
         setResult(null);
 
         // Make the POST request to initiate SSE
-        const response = await fetch(url, {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
