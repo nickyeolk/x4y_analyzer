@@ -69,11 +69,7 @@ def create_analysis_graph():
 
     logger.info("analysis_graph_created")
 
-    # Compile with increased recursion limit (default is 25)
-    # We allow up to 50 to handle max_loops=3 with safety margin
-    return workflow.compile(
-        recursion_limit=50
-    )
+    return workflow.compile()
 
 
 class AnalysisWorkflow:
@@ -141,8 +137,12 @@ class AnalysisWorkflow:
                 state["status"] = "analyzing"
 
                 # Execute workflow
+                # Set recursion_limit to handle max_loops with safety margin
                 logger.info("workflow_invoking_graph")
-                final_state = await self.graph.ainvoke(state)
+                final_state = await self.graph.ainvoke(
+                    state,
+                    config={"recursion_limit": 50}
+                )
 
                 # Calculate total duration
                 duration = time.time() - start_time
