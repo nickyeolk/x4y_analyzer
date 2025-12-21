@@ -29,7 +29,10 @@ class TavilySearchTool(BaseTool):
         Args:
             api_key: Tavily API key (defaults to settings)
         """
-        super().__init__()
+        super().__init__(
+            name="tavily_search",
+            description="Search the web using Tavily AI-optimized search for high-quality, LLM-ready results about brands, markets, and business information."
+        )
         self.api_key = api_key or settings.tavily_api_key
         self.base_url = "https://api.tavily.com"
         self.client = httpx.AsyncClient(timeout=30.0)
@@ -38,8 +41,7 @@ class TavilySearchTool(BaseTool):
             logger.warning("tavily_api_key_not_set",
                           message="Tavily API key not configured, tool will fail")
 
-    @trace_tool
-    async def execute(self, input: ToolInput) -> ToolOutput:
+    async def _execute(self, input: ToolInput) -> Dict[str, Any]:
         """
         Execute Tavily search.
 
@@ -52,15 +54,11 @@ class TavilySearchTool(BaseTool):
                 - exclude_domains: List of domains to exclude
 
         Returns:
-            Tool output with search results
+            Dict with search results
         """
         query = input.parameters.get("query")
         if not query:
-            return ToolOutput(
-                success=False,
-                result=None,
-                error="Query parameter is required",
-            )
+            raise ValueError("Query parameter is required")
 
         max_results = input.parameters.get("max_results", 5)
         search_depth = input.parameters.get("search_depth", "basic")
@@ -74,65 +72,48 @@ class TavilySearchTool(BaseTool):
             search_depth=search_depth,
         )
 
-        try:
-            # Call Tavily API
-            response = await self._search(
-                query=query,
-                max_results=max_results,
-                search_depth=search_depth,
-                include_domains=include_domains,
-                exclude_domains=exclude_domains,
-            )
+        # Call Tavily API
+        response = await self._search(
+            query=query,
+            max_results=max_results,
+            search_depth=search_depth,
+            include_domains=include_domains,
+            exclude_domains=exclude_domains,
+        )
 
-            results = response.get("results", [])
+        results = response.get("results", [])
 
-            # Format results for LLM consumption
-            formatted_results = []
-            for idx, result in enumerate(results, 1):
-                formatted_results.append({
-                    "rank": idx,
-                    "title": result.get("title", ""),
-                    "url": result.get("url", ""),
-                    "content": result.get("content", ""),
-                    "score": result.get("score", 0.0),
-                })
+        # Format results for LLM consumption
+        formatted_results = []
+        for idx, result in enumerate(results, 1):
+            formatted_results.append({
+                "rank": idx,
+                "title": result.get("title", ""),
+                "url": result.get("url", ""),
+                "content": result.get("content", ""),
+                "score": result.get("score", 0.0),
+            })
 
-            # Extract answer if available (Tavily sometimes provides direct answers)
-            answer = response.get("answer", None)
+        # Extract answer if available (Tavily sometimes provides direct answers)
+        answer = response.get("answer", None)
 
-            logger.info(
-                "tavily_search_completed",
-                query=query,
-                results_count=len(results),
-                has_answer=answer is not None,
-            )
+        logger.info(
+            "tavily_search_completed",
+            query=query,
+            results_count=len(results),
+            has_answer=answer is not None,
+        )
 
-            return ToolOutput(
-                success=True,
-                result={
-                    "query": query,
-                    "results": formatted_results,
-                    "answer": answer,
-                    "results_count": len(results),
-                },
-                metadata={
-                    "search_depth": search_depth,
-                    "max_results": max_results,
-                },
-            )
-
-        except Exception as e:
-            logger.error(
-                "tavily_search_failed",
-                query=query,
-                error=str(e),
-                error_type=type(e).__name__,
-            )
-            return ToolOutput(
-                success=False,
-                result=None,
-                error=f"Tavily search failed: {str(e)}",
-            )
+        return {
+            "query": query,
+            "results": formatted_results,
+            "answer": answer,
+            "results_count": len(results),
+            "metadata": {
+                "search_depth": search_depth,
+                "max_results": max_results,
+            }
+        }
 
     async def _search(
         self,

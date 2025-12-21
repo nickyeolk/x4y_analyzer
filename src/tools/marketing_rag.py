@@ -30,14 +30,17 @@ class MarketingRAGTool(BaseTool):
         Args:
             vector_store_path: Path to FAISS vector store
         """
-        super().__init__()
+        super().__init__(
+            name="marketing_rag",
+            description="Semantic search over marketing frameworks, pitfalls, and best practices knowledge base using RAG."
+        )
         self.vector_store_path = vector_store_path or settings.rag_vector_store_path
         self.vectorstore = None
         self.embeddings = None
 
-        self._initialize_vectorstore()
+        self._load_vectorstore()
 
-    def _initialize_vectorstore(self):
+    def _load_vectorstore(self):
         """Initialize or load vector store."""
         try:
             from langchain_community.vectorstores import FAISS
@@ -78,8 +81,7 @@ class MarketingRAGTool(BaseTool):
             )
             self.vectorstore = None
 
-    @trace_tool
-    async def execute(self, input: ToolInput) -> ToolOutput:
+    async def _execute(self, input: ToolInput) -> Dict[str, Any]:
         """
         Execute RAG search.
 
@@ -90,22 +92,14 @@ class MarketingRAGTool(BaseTool):
                 - score_threshold: Minimum relevance score (default: 0.5)
 
         Returns:
-            Tool output with retrieved documents
+            Dict with retrieved documents
         """
         if not self.vectorstore:
-            return ToolOutput(
-                success=False,
-                result=None,
-                error="Vector store not initialized. Please build vector store first.",
-            )
+            raise RuntimeError("Vector store not initialized. Please build vector store first.")
 
         query = input.parameters.get("query")
         if not query:
-            return ToolOutput(
-                success=False,
-                result=None,
-                error="Query parameter is required",
-            )
+            raise ValueError("Query parameter is required")
 
         k = input.parameters.get("k", 3)
         score_threshold = input.parameters.get("score_threshold", 0.5)
@@ -117,61 +111,44 @@ class MarketingRAGTool(BaseTool):
             score_threshold=score_threshold,
         )
 
-        try:
-            # Perform similarity search with scores
-            docs_and_scores = self.vectorstore.similarity_search_with_score(
-                query,
-                k=k,
-            )
+        # Perform similarity search with scores
+        docs_and_scores = self.vectorstore.similarity_search_with_score(
+            query,
+            k=k,
+        )
 
-            # Filter by score threshold
-            filtered_docs = [
-                (doc, score) for doc, score in docs_and_scores
-                if score >= score_threshold
-            ]
+        # Filter by score threshold
+        filtered_docs = [
+            (doc, score) for doc, score in docs_and_scores
+            if score >= score_threshold
+        ]
 
-            # Format results
-            results = []
-            for idx, (doc, score) in enumerate(filtered_docs, 1):
-                results.append({
-                    "rank": idx,
-                    "content": doc.page_content,
-                    "metadata": doc.metadata,
-                    "relevance_score": float(score),
-                })
+        # Format results
+        results = []
+        for idx, (doc, score) in enumerate(filtered_docs, 1):
+            results.append({
+                "rank": idx,
+                "content": doc.page_content,
+                "metadata": doc.metadata,
+                "relevance_score": float(score),
+            })
 
-            logger.info(
-                "rag_search_completed",
-                query=query,
-                results_count=len(results),
-                total_candidates=len(docs_and_scores),
-            )
+        logger.info(
+            "rag_search_completed",
+            query=query,
+            results_count=len(results),
+            total_candidates=len(docs_and_scores),
+        )
 
-            return ToolOutput(
-                success=True,
-                result={
-                    "query": query,
-                    "documents": results,
-                    "results_count": len(results),
-                },
-                metadata={
-                    "k": k,
-                    "score_threshold": score_threshold,
-                },
-            )
-
-        except Exception as e:
-            logger.error(
-                "rag_search_failed",
-                query=query,
-                error=str(e),
-                error_type=type(e).__name__,
-            )
-            return ToolOutput(
-                success=False,
-                result=None,
-                error=f"RAG search failed: {str(e)}",
-            )
+        return {
+            "query": query,
+            "documents": results,
+            "results_count": len(results),
+            "metadata": {
+                "k": k,
+                "score_threshold": score_threshold,
+            }
+        }
 
 
 def get_rag_tool() -> MarketingRAGTool:
