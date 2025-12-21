@@ -34,7 +34,7 @@ class SkepticAgent(BaseAgent):
         self.llm_client = get_llm_client()
         self.rag_tool = get_rag_tool()
 
-    @trace_agent
+    @trace_agent("skeptic")
     async def execute(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute skeptic agent logic.

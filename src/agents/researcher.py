@@ -33,7 +33,7 @@ class ResearcherAgent(BaseAgent):
         self.llm_client = get_llm_client()
         self.tavily_tool = get_tavily_tool()
 
-    @trace_agent
+    @trace_agent("researcher")
     async def execute(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute researcher agent logic.

@@ -31,7 +31,7 @@ class StrategistAgent(BaseAgent):
         super().__init__(name="strategist")
         self.llm_client = get_llm_client()
 
-    @trace_agent
+    @trace_agent("strategist")
     async def execute(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute strategist agent logic.
