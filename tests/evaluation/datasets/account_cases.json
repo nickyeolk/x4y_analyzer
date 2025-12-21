@@ -1,0 +1,132 @@
+[
+  {
+    "test_id": "account_001",
+    "input": "I forgot my password and can't log in. Can you help me reset it?",
+    "customer_id": "cust_001",
+    "subject": "Password reset request",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "medium"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Customer locked out of account"
+  },
+  {
+    "test_id": "account_002",
+    "input": "I need to change the email address associated with my account from old@example.com to new@example.com",
+    "customer_id": "cust_002",
+    "subject": "Update account email",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "low"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Customer wants to update primary email"
+  },
+  {
+    "test_id": "account_003",
+    "input": "I think my account was hacked. I see activity that I didn't perform. Please help secure my account immediately!",
+    "customer_id": "cust_001",
+    "subject": "Account security breach",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "critical"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Suspicious login activity detected"
+  },
+  {
+    "test_id": "account_004",
+    "input": "Can I add additional team members to my account? How do I manage user permissions?",
+    "customer_id": "cust_002",
+    "subject": "Add team members",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "low"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Pro plan customer wants to add collaborators"
+  },
+  {
+    "test_id": "account_005",
+    "input": "I want to delete my account permanently. How do I do that?",
+    "customer_id": "cust_001",
+    "subject": "Account deletion request",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "medium"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Customer wants to close account"
+  },
+  {
+    "test_id": "account_006",
+    "input": "I'm not receiving email notifications anymore. I checked my spam folder and nothing is there.",
+    "customer_id": "cust_002",
+    "subject": "Email notifications not working",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "low"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Notification settings may have been changed"
+  },
+  {
+    "test_id": "account_007",
+    "input": "I need to enable two-factor authentication on my account for security compliance.",
+    "customer_id": "cust_001",
+    "subject": "Enable 2FA",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "low"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Business customer needs 2FA for compliance"
+  },
+  {
+    "test_id": "account_008",
+    "input": "My account was suspended and I don't know why. Can you tell me what happened?",
+    "customer_id": "cust_002",
+    "subject": "Account suspended",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "high"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Account suspended due to payment failure"
+  },
+  {
+    "test_id": "account_009",
+    "input": "I need to update my profile information including my company name and phone number.",
+    "customer_id": "cust_001",
+    "subject": "Update profile details",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "low"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Customer wants to update business information"
+  },
+  {
+    "test_id": "account_010",
+    "input": "Can you merge my two accounts? I accidentally created a duplicate when signing up.",
+    "customer_id": "cust_002",
+    "subject": "Merge duplicate accounts",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "medium"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Customer has two accounts with different emails"
+  }
+]

@@ -1,0 +1,132 @@
+[
+  {
+    "test_id": "technical_001",
+    "input": "The API is returning 500 errors when I try to fetch user data from /api/users endpoint. This started about 2 hours ago.",
+    "customer_id": "cust_002",
+    "subject": "API 500 errors",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "high"
+    },
+    "expected_tools": ["knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Pro tier customer, developer using API"
+  },
+  {
+    "test_id": "technical_002",
+    "input": "I'm getting SSL certificate errors when trying to connect to your service. My browser says the certificate is invalid.",
+    "customer_id": "cust_001",
+    "subject": "SSL certificate error",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "medium"
+    },
+    "expected_tools": ["knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Customer using older browser, certificate valid"
+  },
+  {
+    "test_id": "technical_003",
+    "input": "The mobile app keeps crashing whenever I try to upload a file larger than 10MB. I'm on iOS 17.",
+    "customer_id": "cust_002",
+    "subject": "App crashes on large file upload",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "medium"
+    },
+    "expected_tools": ["knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Known issue with iOS 17, workaround available"
+  },
+  {
+    "test_id": "technical_004",
+    "input": "My webhook integration stopped working suddenly. I'm not receiving any POST requests to my endpoint anymore.",
+    "customer_id": "cust_001",
+    "subject": "Webhook not firing",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "high"
+    },
+    "expected_tools": ["knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Developer customer, webhooks configured 3 months ago"
+  },
+  {
+    "test_id": "technical_005",
+    "input": "I can't log in to the dashboard. The page just keeps loading indefinitely with a spinner.",
+    "customer_id": "cust_002",
+    "subject": "Dashboard won't load",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "high"
+    },
+    "expected_tools": ["knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Basic tier customer, possibly browser cache issue"
+  },
+  {
+    "test_id": "technical_006",
+    "input": "The data export feature is not working. I click Export but nothing happens, no download starts.",
+    "customer_id": "cust_001",
+    "subject": "Export feature broken",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "medium"
+    },
+    "expected_tools": ["knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Pro customer trying to export large dataset"
+  },
+  {
+    "test_id": "technical_007",
+    "input": "I'm experiencing very slow performance when loading my dashboard. It used to be instant but now takes 30+ seconds.",
+    "customer_id": "cust_002",
+    "subject": "Slow dashboard performance",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "medium"
+    },
+    "expected_tools": ["knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Customer has accumulated 50k+ records"
+  },
+  {
+    "test_id": "technical_008",
+    "input": "My API key stopped working this morning. I'm getting 401 Unauthorized errors on all requests.",
+    "customer_id": "cust_001",
+    "subject": "API authentication failing",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "critical"
+    },
+    "expected_tools": ["knowledge_base", "database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Developer customer, API key may have expired"
+  },
+  {
+    "test_id": "technical_009",
+    "input": "I'm trying to integrate your SDK with my Node.js app but getting module not found errors. I followed the docs exactly.",
+    "customer_id": "cust_002",
+    "subject": "SDK integration issue",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "low"
+    },
+    "expected_tools": ["knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "New developer customer, likely installation issue"
+  },
+  {
+    "test_id": "technical_010",
+    "input": "The search functionality isn't returning any results even though I know the data exists in my account.",
+    "customer_id": "cust_001",
+    "subject": "Search not working",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "medium"
+    },
+    "expected_tools": ["knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Pro customer, possible search index rebuild needed"
+  }
+]

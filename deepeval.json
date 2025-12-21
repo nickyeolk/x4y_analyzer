@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "settings": {
+    "model": "anthropic/claude-sonnet-4-5-20250929",
+    "evaluator_model": "anthropic/claude-sonnet-4-5-20250929",
+    "api_key_env": "ANTHROPIC_API_KEY",
+    "cache_enabled": true,
+    "verbose": true
+  },
+  "metrics": {
+    "answer_relevancy": {
+      "threshold": 0.7
+    },
+    "faithfulness": {
+      "threshold": 0.8
+    }
+  },
+  "test_config": {
+    "parallel": false,
+    "num_retries": 2,
+    "timeout": 60
+  }
+}

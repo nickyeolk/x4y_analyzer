@@ -1,0 +1,135 @@
+[
+  {
+    "test_id": "edge_001",
+    "input": "Per GDPR Article 17, I request immediate deletion of all my personal data from your systems including backups.",
+    "customer_id": "cust_001",
+    "subject": "GDPR data deletion request",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "high"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "requires_human": true,
+    "context": "Legal compliance request, requires human review"
+  },
+  {
+    "test_id": "edge_002",
+    "input": "I was charged for a service I didn't use and when I try to log in to dispute it, I get an error. This is extremely frustrating!",
+    "customer_id": "cust_002",
+    "subject": "Billing and login issues",
+    "expected_routing": {
+      "assigned_agent": "billing_agent",
+      "urgency": "high"
+    },
+    "expected_tools": ["database_query", "payment_gateway", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Multi-issue ticket: billing + technical problem"
+  },
+  {
+    "test_id": "edge_003",
+    "input": "Hello, I have a question about your service.",
+    "customer_id": "cust_001",
+    "subject": "General inquiry",
+    "expected_routing": {
+      "assigned_agent": "escalation_agent",
+      "urgency": "low"
+    },
+    "expected_tools": ["database_query"],
+    "expected_outcome": "resolved",
+    "context": "Vague request, needs clarification"
+  },
+  {
+    "test_id": "edge_004",
+    "input": "I'm a lawyer representing a client who claims your service caused financial damages. We're considering legal action. Please contact our office immediately.",
+    "customer_id": "cust_002",
+    "subject": "Legal matter - potential lawsuit",
+    "expected_routing": {
+      "assigned_agent": "escalation_agent",
+      "urgency": "critical"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "escalated",
+    "requires_human": true,
+    "context": "Legal threat, must escalate to legal team"
+  },
+  {
+    "test_id": "edge_005",
+    "input": "Your API documentation is confusing and I can't figure out how to authenticate. Also, I was overcharged last month and need a refund.",
+    "customer_id": "cust_001",
+    "subject": "API help + billing refund",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "medium"
+    },
+    "expected_tools": ["knowledge_base", "database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Multi-issue: technical + billing"
+  },
+  {
+    "test_id": "edge_006",
+    "input": "I received a suspicious email claiming to be from your company asking for my password. Is this a phishing attempt?",
+    "customer_id": "cust_002",
+    "subject": "Potential phishing email",
+    "expected_routing": {
+      "assigned_agent": "account_agent",
+      "urgency": "high"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Security concern, customer education needed"
+  },
+  {
+    "test_id": "edge_007",
+    "input": "I'm the CFO and I need detailed transaction history for the past 3 years for our audit. This is urgent as our audit is next week.",
+    "customer_id": "cust_001",
+    "subject": "Urgent: audit documentation needed",
+    "expected_routing": {
+      "assigned_agent": "billing_agent",
+      "urgency": "high"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "VIP customer, time-sensitive request"
+  },
+  {
+    "test_id": "edge_008",
+    "input": "Someone is using your service to harass me. I need you to shut down their account immediately and provide their identity information.",
+    "customer_id": "cust_002",
+    "subject": "Abuse report - user harassment",
+    "expected_routing": {
+      "assigned_agent": "escalation_agent",
+      "urgency": "critical"
+    },
+    "expected_tools": ["database_query", "email_sender"],
+    "expected_outcome": "escalated",
+    "requires_human": true,
+    "context": "Abuse report, legal/privacy implications"
+  },
+  {
+    "test_id": "edge_009",
+    "input": "I love your service! Just wanted to say thank you for making such a great product. Keep up the good work!",
+    "customer_id": "cust_001",
+    "subject": "Thank you!",
+    "expected_routing": {
+      "assigned_agent": "escalation_agent",
+      "urgency": "low"
+    },
+    "expected_tools": ["email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Positive feedback, no action needed"
+  },
+  {
+    "test_id": "edge_010",
+    "input": "I accidentally deleted all my data. Can you restore it from backup? This is critical - I lost months of work!",
+    "customer_id": "cust_002",
+    "subject": "URGENT: Data recovery needed",
+    "expected_routing": {
+      "assigned_agent": "technical_agent",
+      "urgency": "critical"
+    },
+    "expected_tools": ["database_query", "knowledge_base", "email_sender"],
+    "expected_outcome": "resolved",
+    "context": "Data loss, customer panic, backup restoration needed"
+  }
+]

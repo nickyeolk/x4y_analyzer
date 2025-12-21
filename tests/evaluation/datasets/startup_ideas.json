@@ -1,0 +1,193 @@
+{
+  "test_cases": [
+    {
+      "id": "high_viability_1",
+      "x_brand": "Uber",
+      "y_market": "Dog Walkers",
+      "description": "On-demand dog walking service with real-time GPS tracking and background-checked walkers",
+      "expected_viability_range": [6.5, 9.0],
+      "expected_concerns": ["Trust and safety", "Low barrier to entry", "Competition from established players"],
+      "expected_opportunities": ["Growing pet ownership", "Urban professionals", "Technology integration"],
+      "category": "on-demand_services"
+    },
+    {
+      "id": "high_viability_2",
+      "x_brand": "Netflix",
+      "y_market": "Fitness Classes",
+      "description": "Subscription-based on-demand fitness classes with live and recorded sessions",
+      "expected_viability_range": [7.0, 9.5],
+      "expected_concerns": ["Market saturation", "Customer retention"],
+      "expected_opportunities": ["Post-pandemic home fitness trend", "Global reach", "Low marginal cost"],
+      "category": "subscription_content"
+    },
+    {
+      "id": "high_viability_3",
+      "x_brand": "Airbnb",
+      "y_market": "Office Spaces",
+      "description": "Short-term office space rentals for remote workers and small teams",
+      "expected_viability_range": [6.0, 8.5],
+      "expected_concerns": ["Commercial lease regulations", "Property management complexity"],
+      "expected_opportunities": ["Remote work trend", "Flexible workspace demand", "Underutilized office space"],
+      "category": "marketplace"
+    },
+    {
+      "id": "medium_viability_1",
+      "x_brand": "Spotify",
+      "y_market": "Audiobooks",
+      "description": "Streaming audiobook service with unlimited listening",
+      "expected_viability_range": [5.0, 7.5],
+      "expected_concerns": ["Competition from Audible", "Publisher licensing", "Content acquisition costs"],
+      "expected_opportunities": ["Growing audiobook market", "Existing user base", "Podcast integration"],
+      "category": "subscription_content"
+    },
+    {
+      "id": "medium_viability_2",
+      "x_brand": "DoorDash",
+      "y_market": "Laundry Services",
+      "description": "On-demand laundry pickup and delivery service",
+      "expected_viability_range": [4.5, 7.0],
+      "expected_concerns": ["Low margins", "Logistics complexity", "Customer frequency"],
+      "expected_opportunities": ["Busy urban professionals", "Subscription model potential"],
+      "category": "on-demand_services"
+    },
+    {
+      "id": "medium_viability_3",
+      "x_brand": "LinkedIn",
+      "y_market": "Students",
+      "description": "Professional networking platform for high school and college students",
+      "expected_viability_range": [4.0, 6.5],
+      "expected_concerns": ["Limited professional experience", "Monetization challenges", "Network effects"],
+      "expected_opportunities": ["Early career building", "Internship matching", "Mentorship"],
+      "category": "social_network"
+    },
+    {
+      "id": "low_viability_1",
+      "x_brand": "Uber",
+      "y_market": "Haircuts",
+      "description": "On-demand mobile hairstylist service",
+      "expected_viability_range": [3.0, 5.5],
+      "expected_concerns": ["Licensing requirements", "Equipment logistics", "Quality control", "Limited scalability"],
+      "expected_opportunities": ["Convenience factor", "Event services"],
+      "category": "on-demand_services"
+    },
+    {
+      "id": "low_viability_2",
+      "x_brand": "Tesla",
+      "y_market": "Bicycles",
+      "description": "High-end electric bicycles with autonomous features",
+      "expected_viability_range": [3.5, 6.0],
+      "expected_concerns": ["Market size", "Price sensitivity", "Overengineering", "Competition from established brands"],
+      "expected_opportunities": ["Urban mobility", "Environmental concerns"],
+      "category": "hardware"
+    },
+    {
+      "id": "low_viability_3",
+      "x_brand": "Facebook",
+      "y_market": "Seniors",
+      "description": "Social network specifically designed for senior citizens",
+      "expected_viability_range": [2.5, 5.0],
+      "expected_concerns": ["Facebook already serves this demographic", "Limited tech adoption", "Small target market", "Difficulty acquiring users"],
+      "expected_opportunities": ["Growing senior population", "Simplified interface"],
+      "category": "social_network"
+    },
+    {
+      "id": "edge_case_1",
+      "x_brand": "Amazon",
+      "y_market": "Books",
+      "description": "Online bookstore",
+      "expected_viability_range": [1.0, 3.0],
+      "expected_concerns": ["Amazon already dominates this", "No differentiation"],
+      "expected_opportunities": [],
+      "category": "edge_case",
+      "notes": "This is what Amazon already is - should score very low"
+    },
+    {
+      "id": "innovative_1",
+      "x_brand": "Stripe",
+      "y_market": "Carbon Credits",
+      "description": "Payment infrastructure for carbon credit trading",
+      "expected_viability_range": [6.0, 8.5],
+      "expected_concerns": ["Regulatory complexity", "Market education needed"],
+      "expected_opportunities": ["Climate tech growth", "Corporate ESG mandates", "Transparency needs"],
+      "category": "fintech"
+    },
+    {
+      "id": "innovative_2",
+      "x_brand": "Duolingo",
+      "y_market": "Coding",
+      "description": "Gamified coding education with bite-sized lessons",
+      "expected_viability_range": [6.5, 8.5],
+      "expected_concerns": ["Competition from free resources", "Depth vs breadth tradeoff"],
+      "expected_opportunities": ["Tech job demand", "Gamification engagement", "Mobile-first learning"],
+      "category": "edtech"
+    },
+    {
+      "id": "b2b_1",
+      "x_brand": "Salesforce",
+      "y_market": "Dental Practices",
+      "description": "CRM and practice management software for dentists",
+      "expected_viability_range": [5.5, 7.5],
+      "expected_concerns": ["Vertical market size", "Existing solutions", "Sales cycle"],
+      "expected_opportunities": ["Underserved niche", "Recurring revenue", "Integration opportunities"],
+      "category": "b2b_saas"
+    },
+    {
+      "id": "b2b_2",
+      "x_brand": "Slack",
+      "y_market": "Construction Sites",
+      "description": "Team communication platform for construction workers",
+      "expected_viability_range": [5.0, 7.5],
+      "expected_concerns": ["Field connectivity", "User adoption", "Industry fragmentation"],
+      "expected_opportunities": ["Digital transformation in construction", "Safety coordination", "Mobile workforce"],
+      "category": "b2b_saas"
+    },
+    {
+      "id": "marketplace_1",
+      "x_brand": "Etsy",
+      "y_market": "Home Services",
+      "description": "Marketplace for local home service providers (plumbers, electricians)",
+      "expected_viability_range": [4.5, 7.0],
+      "expected_concerns": ["Trust and quality", "Licensing verification", "Competition from Thumbtack/HomeAdvisor"],
+      "expected_opportunities": ["Fragmented market", "Service provider needs", "Homeowner pain points"],
+      "category": "marketplace"
+    }
+  ],
+  "evaluation_criteria": {
+    "viability_score": {
+      "description": "Overall viability score from 0-10",
+      "weight": 0.30
+    },
+    "market_research_quality": {
+      "description": "Quality and depth of market research",
+      "weight": 0.20
+    },
+    "concerns_identified": {
+      "description": "Number and relevance of concerns identified by Skeptic",
+      "weight": 0.20
+    },
+    "gtm_completeness": {
+      "description": "Completeness of GTM strategy (target audience, value prop, channels, etc.)",
+      "weight": 0.20
+    },
+    "insight_quality": {
+      "description": "Quality of insights and recommendations",
+      "weight": 0.10
+    }
+  },
+  "metadata": {
+    "created": "2025-12-20",
+    "version": "1.0",
+    "total_test_cases": 15,
+    "categories": [
+      "on-demand_services",
+      "subscription_content",
+      "marketplace",
+      "social_network",
+      "hardware",
+      "fintech",
+      "edtech",
+      "b2b_saas",
+      "edge_case"
+    ]
+  }
+}
