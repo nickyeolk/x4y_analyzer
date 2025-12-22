@@ -1,0 +1,118 @@
+Common Startup Analysis Pitfalls and Quality Evaluation Criteria
+
+This document outlines common mistakes in startup market analysis and criteria for evaluating analysis quality.
+
+## Marketplace-Specific Pitfalls
+
+### The Cold Start Problem
+Two-sided marketplaces face a chicken-and-egg problem: buyers need sellers, sellers need buyers.
+Quality check: Does the analysis address how to bootstrap the initial supply/demand?
+
+### Network Effects Misunderstanding
+Not all marketplaces have strong network effects. Some have weak or even negative network effects.
+Quality check: Does the analysis explain why this specific marketplace would benefit from network effects?
+
+### Unit Economics Trap
+Many marketplaces achieve scale but never achieve profitability due to poor unit economics.
+Quality check: Does the analysis consider take rate, transaction costs, and contribution margin?
+
+### Winner-Take-All Assumption
+Not all markets are winner-take-all. Some markets support multiple players (fragmentation).
+Quality check: Does the analysis explain why this market would consolidate vs. fragment?
+
+## Competitive Analysis Quality Criteria
+
+### Depth of Competitive Research
+Superficial analysis mentions "Uber" or "Airbnb" without analyzing actual competitors in the target market.
+Quality check:
+- Are direct competitors identified by name?
+- Are indirect competitors and substitutes considered?
+- Is competitive differentiation clearly articulated?
+
+### Market Saturation Assessment
+Vague statements like "growing market" without evidence or specific saturation metrics.
+Quality check:
+- Is market saturation quantified (# of competitors, market share distribution)?
+- Are recent market entries/exits mentioned?
+- Is timing justified (why now vs. 5 years ago)?
+
+### Barriers to Entry
+Missing analysis of what prevents new entrants or why existing players haven't solved this.
+Quality check:
+- What are the technical barriers?
+- What are the regulatory barriers?
+- What are the capital barriers?
+- What are the moat/defensibility factors?
+
+## Brand DNA Analysis Quality Criteria
+
+### Surface-Level Strength Analysis
+Listing obvious strengths without explaining HOW they transfer to the new market.
+Quality check:
+- Does the analysis explain the mechanism of strength transfer?
+- Are there counter-examples where this strength didn't transfer?
+- Is the "X for Y" analogy justified or forced?
+
+### Missing Weakness Consideration
+Only highlighting strengths without considering what the X brand does POORLY.
+Quality check:
+- What did the X brand struggle with initially?
+- What criticisms does the X brand face?
+- What would be different in the Y market?
+
+## Market Research Quality Criteria
+
+### TAM Overestimation
+Taking entire market size without considering actual addressable segments.
+Quality check:
+- Is TAM broken down into SAM (Serviceable Addressable Market) and SOM (Serviceable Obtainable Market)?
+- Are realistic penetration rates used?
+- Is the beachhead market identified?
+
+### Trend Misinterpretation
+Citing macro trends without showing causal link to specific opportunity.
+Quality check:
+- Is the trend directly related to the opportunity?
+- Is the trend durable or temporary?
+- Are counter-trends considered?
+
+### Customer Pain Point Validation
+Assuming pain points exist without evidence of customer willingness to pay.
+Quality check:
+- Is there evidence customers currently pay for solutions?
+- Is the pain point acute or mild?
+- Is the frequency of the pain point sufficient?
+
+## Red Flags Requiring Deeper Investigation
+
+1. **Regulatory Risk Ignored**: Sharing economy ideas often face regulatory challenges
+2. **Supply-Side Difficulty**: Labor marketplaces where supply is hard to recruit/retain
+3. **Low Frequency Use Case**: Transactions that happen once per year are hard to build engagement
+4. **Commoditized Service**: If the service is undifferentiated, race to bottom on price
+5. **High CAC Market**: Some markets have inherently high customer acquisition costs
+6. **Long Sales Cycle**: Enterprise markets with 12+ month sales cycles require deep pockets
+
+## Evaluation Framework for Analysis Quality
+
+### Excellent Analysis (Approve)
+- Specific competitors named and differentiated
+- Quantified market metrics provided
+- Clear barriers to entry identified
+- Unit economics considered
+- Go-to-market strategy outlined
+- Realistic about challenges
+
+### Weak Analysis (Loop Back)
+- Generic statements without specifics
+- Missing competitive landscape detail
+- No mention of barriers or challenges
+- Overly optimistic without evidence
+- Analogies that don't transfer
+- Missing key market dynamics
+
+### Fatal Flaws (Reject)
+- Demonstrably wrong factual claims
+- Ignoring obvious major competitors
+- Regulatory impossibility
+- Market already saturated with failed attempts
+- Fundamental business model flaw

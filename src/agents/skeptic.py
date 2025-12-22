@@ -58,9 +58,47 @@ class SkepticAgent(BaseAgent):
             max_loops=max_loops,
         )
 
-        # Step 1: Consult RAG for marketing frameworks
-        rag_query = f"common pitfalls for {business_idea['full_idea']} marketplace startup saturation competitive analysis"
-        logger.info("skeptic_consulting_rag", query=rag_query)
+        # Step 1: Classify business model to query relevant frameworks
+        logger.info("skeptic_classifying_business_model", idea=business_idea["full_idea"])
+
+        classification_response = await self.llm_client.generate(
+            system="You are a business model expert. Classify startup ideas into business model types.",
+            messages=[{
+                "role": "user",
+                "content": f"""Classify this business idea into ONE primary business model type: {business_idea['full_idea']}
+
+Choose from:
+- marketplace (two-sided platforms like Uber, Airbnb, Upwork)
+- subscription (recurring revenue like Netflix, Spotify)
+- saas (B2B software like Shopify, Salesforce, Slack)
+- ecommerce (online retail like Amazon, Warby Parker)
+- service (professional services, consulting)
+- hardware (physical products, IoT)
+- other
+
+Respond with ONLY the business model type, nothing else."""
+            }],
+            max_tokens=50,
+            temperature=0.3,
+        )
+
+        business_model_type = classification_response.content.strip().lower()
+        logger.info("skeptic_business_model_classified", type=business_model_type)
+
+        # Step 2: Build targeted RAG query based on business model type
+        rag_query_map = {
+            "marketplace": "marketplace startup cold start problem network effects unit economics two-sided platform supply demand liquidity",
+            "subscription": "subscription business model churn retention pricing customer lifetime value cohort analysis",
+            "saas": "B2B SaaS sales cycle enterprise adoption switching costs product-led growth customer success",
+            "ecommerce": "ecommerce unit economics customer acquisition cost retention repeat purchase inventory",
+            "service": "service business scalability pricing delivery model professional services margins",
+            "hardware": "hardware product manufacturing supply chain distribution retail margins",
+            "other": "startup market analysis quality criteria competitive analysis evaluation framework",
+        }
+
+        # Get specific query or fallback to generic
+        rag_query = rag_query_map.get(business_model_type, rag_query_map["other"])
+        logger.info("skeptic_consulting_rag", query=rag_query, business_model=business_model_type)
 
         rag_result = await self.rag_tool.execute(
             ToolInput(
@@ -176,6 +214,7 @@ If iteration >= {max_loops - 1}, you MUST approve (even if weak) to prevent infi
                 action="critical_review",
                 reasoning=critique.reasoning,
                 tool_calls=[
+                    {"tool": "llm_classification", "business_model": business_model_type},
                     {"tool": "marketing_rag", "query": rag_query}
                 ],
                 result=f"{'APPROVED' if critique.approved else 'REJECTED'} - {critique.loop_back_reason or 'Proceed to strategy'}",
@@ -206,9 +245,13 @@ If iteration >= {max_loops - 1}, you MUST approve (even if weak) to prevent infi
             if "token_usage" not in state["metadata"]:
                 state["metadata"]["token_usage"] = {}
             state["metadata"]["token_usage"]["skeptic"] = {
-                "prompt_tokens": llm_response.prompt_tokens,
-                "completion_tokens": llm_response.completion_tokens,
-                "total_tokens": llm_response.total_tokens,
+                "classification_prompt_tokens": classification_response.prompt_tokens,
+                "classification_completion_tokens": classification_response.completion_tokens,
+                "critique_prompt_tokens": llm_response.prompt_tokens,
+                "critique_completion_tokens": llm_response.completion_tokens,
+                "total_tokens": (
+                    classification_response.total_tokens + llm_response.total_tokens
+                ),
             }
 
             logger.info(
