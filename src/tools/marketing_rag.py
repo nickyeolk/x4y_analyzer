@@ -165,7 +165,20 @@ class MarketingRAGTool(BaseTool):
             k=k,
         )
 
+        # Log raw scores for debugging
+        if docs_and_scores:
+            logger.info(
+                "rag_similarity_scores",
+                query=query[:100],
+                scores=[float(score) for _, score in docs_and_scores],
+                min_score=float(min(score for _, score in docs_and_scores)),
+                max_score=float(max(score for _, score in docs_and_scores)),
+            )
+
         # Filter by score threshold
+        # Note: FAISS with L2 distance returns lower scores for better matches
+        # For cosine similarity, higher scores are better
+        # We're using a permissive threshold since we want relevant frameworks
         filtered_docs = [
             (doc, score) for doc, score in docs_and_scores
             if score >= score_threshold

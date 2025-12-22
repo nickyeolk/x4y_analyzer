@@ -68,7 +68,7 @@ class SkepticAgent(BaseAgent):
                 parameters={
                     "query": rag_query,
                     "k": 3,
-                    "score_threshold": 0.5,
+                    "score_threshold": 0.3,  # Lower threshold to be more inclusive
                 },
             )
         )
