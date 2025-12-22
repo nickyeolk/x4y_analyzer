@@ -48,22 +48,36 @@ class AnalystAgent(BaseAgent):
         x_brand = business_idea["x_brand"]
         iteration = state.get("loop_count", 0)
 
+        # Check if this is a loop back (skeptic rejected previous iteration)
+        skeptic_critique = state.get("skeptic_critique")
+        is_loop_back = skeptic_critique is not None and iteration > 0
+
         logger.info(
             "analyst_started",
             brand=x_brand,
             iteration=iteration,
+            is_loop_back=is_loop_back,
         )
 
         # Step 1: Search for brand information
-        search_query = f"{x_brand} company business model key features success factors"
-        logger.info("analyst_searching", query=search_query)
+        # Use more specific query if skeptic provided feedback
+        if is_loop_back:
+            # Extract concerns to focus search
+            concerns = skeptic_critique.get("concerns", [])
+            suggestions = skeptic_critique.get("suggestions", [])
+            focus_areas = " ".join(concerns[:2] + suggestions[:2])  # Top 2 of each
+            search_query = f"{x_brand} {focus_areas} business model competitive advantages"
+            logger.info("analyst_searching_focused", query=search_query, reason="addressing_skeptic_feedback")
+        else:
+            search_query = f"{x_brand} company business model key features success factors"
+            logger.info("analyst_searching", query=search_query)
 
         search_result = await self.tavily_tool.execute(
             ToolInput(
                 tool_name="tavily_search",
                 parameters={
                     "query": search_query,
-                    "max_results": 5,
+                    "max_results": 7 if is_loop_back else 5,  # More results on loop back
                     "search_depth": "advanced",
                 },
             )
@@ -73,20 +87,44 @@ class AnalystAgent(BaseAgent):
         search_context = ""
         if search_result.success:
             results = search_result.result.get("results", [])
+            # Use more results if looping back
+            num_results = 5 if is_loop_back else 3
             search_context = "\n\n".join([
                 f"**{r['title']}**\n{r['content']}"
-                for r in results[:3]
+                for r in results[:num_results]
             ])
 
-        # Step 2: LLM analysis
+        # Step 2: LLM analysis with skeptic feedback if available
         user_message = f"""Analyze the brand: {x_brand}
 
 Business Idea Context: {business_idea['full_idea']}
 
 Web Search Results:
-{search_context}
+{search_context}"""
 
-Provide a comprehensive brand DNA analysis."""
+        # Include skeptic feedback if this is a loop back
+        if is_loop_back:
+            user_message += f"""
+
+⚠️ PREVIOUS ITERATION FEEDBACK - CRITICAL TO ADDRESS:
+
+The Skeptic rejected the previous analysis for the following reasons:
+Rejection Reason: {skeptic_critique.get('loop_back_reason', 'Quality concerns')}
+
+Specific Concerns Identified:
+{chr(10).join(f"- {concern}" for concern in skeptic_critique.get('concerns', []))}
+
+Fatal Flaws Found:
+{chr(10).join(f"- {flaw}" for flaw in skeptic_critique.get('fatal_flaws', [])) if skeptic_critique.get('fatal_flaws') else "None"}
+
+Suggestions for Improvement:
+{chr(10).join(f"- {suggestion}" for suggestion in skeptic_critique.get('suggestions', []))}
+
+Iteration: {iteration + 1} of {state.get('max_loops', 3)}
+
+INSTRUCTION: Address ALL of the above concerns in your analysis. Be MORE specific, MORE detailed, and MORE thorough than the previous iteration. Focus especially on the areas flagged by the Skeptic."""
+
+        user_message += "\n\nProvide a comprehensive brand DNA analysis."
 
         llm_response = await self.llm_client.generate(
             system=ANALYST_SYSTEM_PROMPT,

@@ -48,36 +48,49 @@ class ResearcherAgent(BaseAgent):
         y_market = business_idea["y_market"]
         iteration = state.get("loop_count", 0)
 
+        # Check if this is a loop back (skeptic rejected previous iteration)
+        skeptic_critique = state.get("skeptic_critique")
+        is_loop_back = skeptic_critique is not None and iteration > 0
+
         logger.info(
             "researcher_started",
             market=y_market,
             iteration=iteration,
+            is_loop_back=is_loop_back,
         )
 
         # Step 1: Search for market information
-        market_query = f"{y_market} market size competitors landscape trends"
-        logger.info("researcher_searching", query=market_query)
+        # Adjust query based on skeptic feedback
+        if is_loop_back:
+            concerns = skeptic_critique.get("concerns", [])
+            suggestions = skeptic_critique.get("suggestions", [])
+            focus_areas = " ".join(concerns[:2] + suggestions[:2])
+            market_query = f"{y_market} {focus_areas} market saturation barriers opportunities"
+            logger.info("researcher_searching_focused", query=market_query, reason="addressing_skeptic_feedback")
+        else:
+            market_query = f"{y_market} market size competitors landscape trends"
+            logger.info("researcher_searching", query=market_query)
 
         market_search = await self.tavily_tool.execute(
             ToolInput(
                 tool_name="tavily_search",
                 parameters={
                     "query": market_query,
-                    "max_results": 5,
+                    "max_results": 7 if is_loop_back else 5,  # More results on loop back
                     "search_depth": "advanced",
                 },
             )
         )
 
         # Step 2: Search for competitors
-        competitor_query = f"{y_market} companies apps services startups"
+        competitor_query = f"{y_market} companies apps services startups competitors"
         competitor_search = await self.tavily_tool.execute(
             ToolInput(
                 tool_name="tavily_search",
                 parameters={
                     "query": competitor_query,
-                    "max_results": 5,
-                    "search_depth": "basic",
+                    "max_results": 7 if is_loop_back else 5,  # More results on loop back
+                    "search_depth": "advanced" if is_loop_back else "basic",  # Deeper search on loop back
                 },
             )
         )
@@ -86,20 +99,24 @@ class ResearcherAgent(BaseAgent):
         market_context = ""
         if market_search.success:
             results = market_search.result.get("results", [])
+            # Use more results if looping back
+            num_results = 5 if is_loop_back else 3
             market_context = "\n\n".join([
                 f"**{r['title']}**\n{r['content']}"
-                for r in results[:3]
+                for r in results[:num_results]
             ])
 
         competitor_context = ""
         if competitor_search.success:
             results = competitor_search.result.get("results", [])
+            # Use more results if looping back
+            num_results = 5 if is_loop_back else 3
             competitor_context = "\n\n".join([
                 f"**{r['title']}**\n{r['content']}"
-                for r in results[:3]
+                for r in results[:num_results]
             ])
 
-        # Step 3: LLM analysis
+        # Step 3: LLM analysis with skeptic feedback if available
         user_message = f"""Analyze the market: {y_market}
 
 Business Idea Context: {business_idea['full_idea']}
@@ -108,9 +125,31 @@ Market Research:
 {market_context}
 
 Competitor Research:
-{competitor_context}
+{competitor_context}"""
 
-Provide a comprehensive market analysis including saturation assessment."""
+        # Include skeptic feedback if this is a loop back
+        if is_loop_back:
+            user_message += f"""
+
+⚠️ PREVIOUS ITERATION FEEDBACK - CRITICAL TO ADDRESS:
+
+The Skeptic rejected the previous analysis for the following reasons:
+Rejection Reason: {skeptic_critique.get('loop_back_reason', 'Quality concerns')}
+
+Specific Concerns Identified:
+{chr(10).join(f"- {concern}" for concern in skeptic_critique.get('concerns', []))}
+
+Fatal Flaws Found:
+{chr(10).join(f"- {flaw}" for flaw in skeptic_critique.get('fatal_flaws', [])) if skeptic_critique.get('fatal_flaws') else "None"}
+
+Suggestions for Improvement:
+{chr(10).join(f"- {suggestion}" for suggestion in skeptic_critique.get('suggestions', []))}
+
+Iteration: {iteration + 1} of {state.get('max_loops', 3)}
+
+INSTRUCTION: Address ALL of the above concerns in your analysis. Be MORE specific about competitive threats, MORE detailed about market saturation, and MORE thorough about barriers to entry. Focus especially on the areas flagged by the Skeptic."""
+
+        user_message += "\n\nProvide a comprehensive market analysis including saturation assessment."
 
         llm_response = await self.llm_client.generate(
             system=RESEARCHER_SYSTEM_PROMPT,
