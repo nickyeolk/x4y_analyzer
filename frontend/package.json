@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "clean": "rm -rf node_modules/.vite dist",
+    "clean": "rm -rf node_modules/.vite dist || true",
     "build": "npm run clean && vite build",
     "preview": "vite preview",
     "start": "serve -s dist -l $PORT"
