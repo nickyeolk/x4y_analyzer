@@ -13,7 +13,8 @@ from src.observability.decorators import trace_tool
 class ToolInput(BaseModel):
     """Base model for tool inputs."""
 
-    pass
+    tool_name: str = Field(..., description="Name of the tool to execute")
+    parameters: Dict[str, Any] = Field(default_factory=dict, description="Tool execution parameters")
 
 
 class ToolOutput(BaseModel):
