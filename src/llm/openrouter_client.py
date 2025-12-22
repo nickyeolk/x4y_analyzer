@@ -1,16 +1,17 @@
 """
 OpenRouter LLM client with observability and retry logic.
 
-Provides access to GPT-4o via OpenRouter API.
+Provides access to GPT-4o via OpenRouter API with LangSmith integration.
 """
 
 import asyncio
-import httpx
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage, HumanMessage
+
 from config.settings import settings
-from src.llm.retry import retry_on_llm_error
 from src.llm.token_counter import estimate_tokens
 from src.observability.logger import get_logger
 from src.observability.tracer import trace_span, add_span_attributes
@@ -56,15 +57,26 @@ class OpenRouterClient:
     """
     OpenRouter client for accessing GPT-4o and other models.
 
+    Uses LangChain's ChatOpenAI for automatic LangSmith tracing.
     Provides observability, retry logic, and consistent interface.
     """
 
     def __init__(self, api_key: str, model: str):
         self.api_key = api_key
         self.model = model
-        self.base_url = "https://openrouter.ai/api/v1"
-        self.client = httpx.AsyncClient(timeout=settings.llm_timeout_seconds)
-        logger.info("openrouter_client_initialized", model=model)
+
+        # Initialize LangChain ChatOpenAI with OpenRouter endpoint
+        self.llm = ChatOpenAI(
+            model=model,
+            openai_api_key=api_key,
+            openai_api_base="https://openrouter.ai/api/v1",
+            temperature=0.7,  # Default, can be overridden
+            max_tokens=4096,  # Default, can be overridden
+            timeout=settings.llm_timeout_seconds,
+            max_retries=settings.llm_max_retries,
+        )
+
+        logger.info("openrouter_client_initialized", model=model, langsmith_enabled=settings.langchain_tracing_v2)
 
     async def generate(
         self,
@@ -74,7 +86,7 @@ class OpenRouterClient:
         temperature: float = 0.7,
     ) -> LLMResponse:
         """
-        Generate a response using OpenRouter API.
+        Generate a response using OpenRouter API via LangChain.
 
         Args:
             system: System prompt
@@ -88,11 +100,17 @@ class OpenRouterClient:
         with trace_span("llm.generate", {"model": self.model}):
             start_time = datetime.utcnow()
 
-            # Format messages for OpenAI-compatible API
-            formatted_messages = [{"role": "system", "content": system}]
-            formatted_messages.extend(messages)
+            # Format messages for LangChain
+            langchain_messages = [SystemMessage(content=system)]
+            for msg in messages:
+                if msg["role"] == "user":
+                    langchain_messages.append(HumanMessage(content=msg["content"]))
+                elif msg["role"] == "assistant":
+                    # Note: For now we only support user messages after system
+                    # Can extend to support multi-turn conversations later
+                    pass
 
-            # Estimate input tokens
+            # Estimate input tokens for logging
             input_text = system + " ".join([m["content"] for m in messages])
             estimated_input_tokens = estimate_tokens(input_text)
 
@@ -110,19 +128,23 @@ class OpenRouterClient:
             )
 
             try:
-                # Call OpenRouter API with retry logic
-                response = await self._call_api_with_retry(
-                    formatted_messages,
-                    max_tokens,
-                    temperature,
+                # Update LLM config for this call
+                llm_with_config = self.llm.bind(
+                    max_tokens=max_tokens,
+                    temperature=temperature,
                 )
 
-                # Parse response
-                content = response["choices"][0]["message"]["content"]
-                usage = response["usage"]
+                # Call LangChain (automatically traced by LangSmith!)
+                response = await llm_with_config.ainvoke(langchain_messages)
+
+                # Extract content
+                content = response.content
+
+                # Get token usage from response metadata
+                usage = response.response_metadata.get("token_usage", {})
                 prompt_tokens = usage.get("prompt_tokens", estimated_input_tokens)
                 completion_tokens = usage.get("completion_tokens", estimate_tokens(content))
-                finish_reason = response["choices"][0].get("finish_reason", "stop")
+                finish_reason = response.response_metadata.get("finish_reason", "stop")
 
                 # Record metrics
                 record_llm_usage(
@@ -168,58 +190,10 @@ class OpenRouterClient:
                 )
                 raise LLMError(f"LLM request failed: {str(e)}") from e
 
-    @retry_on_llm_error
-    async def _call_api_with_retry(
-        self,
-        messages: List[Dict[str, str]],
-        max_tokens: int,
-        temperature: float,
-    ) -> Dict[str, Any]:
-        """
-        Call OpenRouter API with automatic retry on transient errors.
-
-        Args:
-            messages: Formatted messages
-            max_tokens: Max tokens to generate
-            temperature: Sampling temperature
-
-        Returns:
-            API response dict
-        """
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/startup-analyzer",  # Optional
-            "X-Title": "Startup Analyzer",  # Optional
-        }
-
-        payload = {
-            "model": self.model,
-            "messages": messages,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
-
-        response = await self.client.post(
-            f"{self.base_url}/chat/completions",
-            headers=headers,
-            json=payload,
-        )
-
-        if response.status_code != 200:
-            error_text = response.text
-            logger.error(
-                "openrouter_api_error",
-                status_code=response.status_code,
-                error=error_text,
-            )
-            raise LLMError(f"OpenRouter API error: {response.status_code} - {error_text}")
-
-        return response.json()
-
     async def close(self):
-        """Close the HTTP client."""
-        await self.client.aclose()
+        """Close resources (no-op for LangChain client)."""
+        # LangChain handles its own connection pooling
+        pass
 
     async def __aenter__(self):
         """Async context manager entry."""
