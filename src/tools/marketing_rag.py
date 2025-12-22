@@ -94,6 +94,14 @@ class MarketingRAGTool(BaseTool):
         Returns:
             Dict with retrieved documents
         """
+        # Retry loading vector store if it wasn't available during initialization
+        if not self.vectorstore:
+            logger.info(
+                "rag_retry_load",
+                message="Vector store not loaded, attempting to reload (may have been built after initialization)"
+            )
+            self._load_vectorstore()
+
         if not self.vectorstore:
             raise RuntimeError("Vector store not initialized. Please build vector store first.")
 
