@@ -46,16 +46,38 @@ class MarketingRAGTool(BaseTool):
             from langchain_community.vectorstores import FAISS
             from langchain_openai import OpenAIEmbeddings
 
+            vector_store_file = Path(self.vector_store_path)
+
+            # Debug: Check what files exist
+            logger.info(
+                "rag_load_attempt",
+                vector_store_path=str(self.vector_store_path),
+                path_exists=vector_store_file.exists(),
+                path_is_dir=vector_store_file.is_dir() if vector_store_file.exists() else False,
+                parent_exists=vector_store_file.parent.exists(),
+            )
+
+            # List files in vector store directory if it exists
+            if vector_store_file.exists() and vector_store_file.is_dir():
+                files = list(vector_store_file.glob("*"))
+                logger.info(
+                    "rag_vectorstore_files",
+                    path=str(self.vector_store_path),
+                    files=[f.name for f in files],
+                    file_count=len(files),
+                )
+
             # Initialize embeddings
+            logger.info("rag_initializing_embeddings", api_base="https://openrouter.ai/api/v1")
             self.embeddings = OpenAIEmbeddings(
                 openai_api_key=settings.openrouter_api_key,
                 openai_api_base="https://openrouter.ai/api/v1",
             )
-
-            vector_store_file = Path(self.vector_store_path)
+            logger.info("rag_embeddings_initialized")
 
             if vector_store_file.exists():
                 # Load existing vector store
+                logger.info("rag_loading_faiss", path=str(self.vector_store_path))
                 self.vectorstore = FAISS.load_local(
                     self.vector_store_path,
                     self.embeddings,
@@ -64,6 +86,7 @@ class MarketingRAGTool(BaseTool):
                 logger.info(
                     "rag_vectorstore_loaded",
                     path=self.vector_store_path,
+                    success=True,
                 )
             else:
                 logger.warning(
@@ -78,6 +101,8 @@ class MarketingRAGTool(BaseTool):
                 "rag_initialization_failed",
                 error=str(e),
                 error_type=type(e).__name__,
+                vector_store_path=str(self.vector_store_path),
+                traceback=True,
             )
             self.vectorstore = None
 
@@ -96,14 +121,29 @@ class MarketingRAGTool(BaseTool):
         """
         # Retry loading vector store if it wasn't available during initialization
         if not self.vectorstore:
-            logger.info(
-                "rag_retry_load",
-                message="Vector store not loaded, attempting to reload (may have been built after initialization)"
+            logger.warning(
+                "rag_retry_load_needed",
+                message="Vector store not loaded during init, attempting to reload",
+                vector_store_path=self.vector_store_path,
             )
             self._load_vectorstore()
 
+            if self.vectorstore:
+                logger.info(
+                    "rag_retry_load_success",
+                    message="Vector store successfully loaded on retry",
+                )
+            else:
+                logger.error(
+                    "rag_retry_load_failed",
+                    message="Vector store still not available after retry",
+                    vector_store_path=self.vector_store_path,
+                )
+
         if not self.vectorstore:
-            raise RuntimeError("Vector store not initialized. Please build vector store first.")
+            error_msg = f"Vector store not initialized at path: {self.vector_store_path}. Please ensure vector store is built and path is correct."
+            logger.error("rag_execute_failed", error=error_msg)
+            raise RuntimeError(error_msg)
 
         query = input.parameters.get("query")
         if not query:
