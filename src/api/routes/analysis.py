@@ -101,6 +101,13 @@ async def stream_analysis_events(
 
         # Execute the workflow with keepalive
         # Create a task for the workflow execution
+        logger.info(
+            "api_starting_workflow",
+            analysis_id=analysis_id,
+            x_brand=x_brand,
+            y_market=y_market,
+        )
+
         workflow_task = asyncio.create_task(
             analyze_startup(
                 analysis_id=analysis_id,
@@ -115,11 +122,20 @@ async def stream_analysis_events(
         keepalive_counter = 0
         max_wait_seconds = 600  # 10 minute timeout
 
+        logger.info("api_entering_keepalive_loop", analysis_id=analysis_id)
+
         while not workflow_task.done():
             await asyncio.sleep(10)  # Ping every 10 seconds
             if not workflow_task.done():
                 keepalive_counter += 1
                 elapsed = keepalive_counter * 10
+
+                logger.info(
+                    "api_keepalive_loop_iteration",
+                    analysis_id=analysis_id,
+                    elapsed=elapsed,
+                    task_done=workflow_task.done(),
+                )
 
                 # Check timeout
                 if elapsed >= max_wait_seconds:
@@ -146,6 +162,12 @@ async def stream_analysis_events(
                     elapsed_seconds=elapsed,
                 )
 
+        logger.info(
+            "api_exited_keepalive_loop",
+            analysis_id=analysis_id,
+            task_done=workflow_task.done(),
+        )
+
         # Get the result
         result = await workflow_task
 
@@ -153,6 +175,7 @@ async def stream_analysis_events(
             "api_workflow_completed",
             analysis_id=analysis_id,
             elapsed_seconds=keepalive_counter * 10,
+            has_result=result is not None,
         )
 
         # Send agent completion events
