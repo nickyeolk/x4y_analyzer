@@ -33,7 +33,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: white;
   min-height: 100vh;
   color: var(--gray-900);
 }
@@ -50,7 +50,7 @@ body {
 
 .header {
   text-align: center;
-  color: white;
+  color: var(--gray-900);
   margin-bottom: 3rem;
   padding: 2rem 0;
 }
@@ -59,12 +59,15 @@ body {
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .header p {
   font-size: 1.25rem;
-  opacity: 0.9;
+  color: var(--gray-600);
 }
 
 .card {

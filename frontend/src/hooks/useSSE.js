@@ -15,6 +15,16 @@ export function useSSE(url, body, shouldConnect = false) {
   const [result, setResult] = useState(null);
   const eventSourceRef = useRef(null);
 
+  // Reset state when shouldConnect becomes false (user clicked reset)
+  useEffect(() => {
+    if (!shouldConnect) {
+      setEvents([]);
+      setError(null);
+      setResult(null);
+      setIsConnected(false);
+    }
+  }, [shouldConnect]);
+
   useEffect(() => {
     if (!shouldConnect || !url || !body) {
       return;
