@@ -27,7 +27,9 @@ function App() {
   };
 
   const hasResults = result !== null;
-  const isAnalyzing = isConnected || (shouldAnalyze && !hasResults && !error);
+  // Prioritize hasResults - if we have results, we're not analyzing anymore
+  // even if the SSE connection hasn't fully closed yet
+  const isAnalyzing = !hasResults && !error && (isConnected || shouldAnalyze);
 
   return (
     <div className="container">

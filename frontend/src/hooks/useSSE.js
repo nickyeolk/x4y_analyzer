@@ -32,6 +32,7 @@ export function useSSE(url, body, shouldConnect = false) {
 
     const connect = async () => {
       try {
+        console.log('[SSE] Starting connection...');
         setIsConnected(true);
         setError(null);
         setEvents([]);
@@ -85,13 +86,18 @@ export function useSSE(url, body, shouldConnect = false) {
 
                   setEvents(prev => [...prev, event]);
 
+                  console.log(`[SSE] Received event: ${currentEvent}`, { timestamp: event.timestamp });
+
                   // Store the final result
                   if (currentEvent === 'result') {
+                    console.log('[SSE] Final result received, setting result state');
                     setResult(parsedData);
+                    // Note: Stream should close after this, but connection may take a moment
                   }
 
                   // Handle errors
                   if (currentEvent === 'error') {
+                    console.error('[SSE] Error event received:', parsedData);
                     setError(parsedData);
                   }
                 } catch (e) {
@@ -104,9 +110,10 @@ export function useSSE(url, body, shouldConnect = false) {
           }
         }
 
+        console.log('[SSE] Stream ended naturally, closing connection');
         setIsConnected(false);
       } catch (err) {
-        console.error('SSE connection error:', err);
+        console.error('[SSE] Connection error:', err);
         setError({
           error: err.message,
           error_type: 'ConnectionError',

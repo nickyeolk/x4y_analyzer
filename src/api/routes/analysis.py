@@ -224,11 +224,19 @@ async def stream_analysis_events(
         }
 
         logger.info(
+            "api_result_event_yielded",
+            analysis_id=analysis_id,
+            message="Result event sent, stream should close after this",
+        )
+
+        logger.info(
             "api_analysis_completed",
             analysis_id=analysis_id,
             status=result.get("status"),
             viability_score=result.get("strategist_plan", {}).get("viability_score"),
         )
+
+        # Generator function ends here, stream should close
 
     except Exception as e:
         logger.error(
@@ -248,6 +256,12 @@ async def stream_analysis_events(
                 "timestamp": datetime.utcnow().isoformat(),
             })
         }
+
+        logger.info(
+            "api_error_event_sent",
+            analysis_id=analysis_id,
+            message="Error event sent, stream will close",
+        )
 
 
 @router.post("/analyze/stream")
