@@ -23,6 +23,27 @@ export function MetricsDashboard({ result }) {
     return tokens.toString();
   };
 
+  // Calculate total tokens from per-agent token usage
+  const calculateTotalTokens = () => {
+    if (!metadata.token_usage) return null;
+
+    let totalPrompt = 0;
+    let totalCompletion = 0;
+
+    Object.values(metadata.token_usage).forEach(agentUsage => {
+      totalPrompt += agentUsage.prompt_tokens || 0;
+      totalCompletion += agentUsage.completion_tokens || 0;
+    });
+
+    return {
+      totalPrompt,
+      totalCompletion,
+      total: totalPrompt + totalCompletion
+    };
+  };
+
+  const tokenTotals = calculateTotalTokens();
+
   return (
     <>
       {/* Idea Quality Assessment */}
@@ -87,32 +108,32 @@ export function MetricsDashboard({ result }) {
               <div className="metric-label">Iterations</div>
             </div>
 
-            {metadata.token_usage?.total_tokens && (
+            {tokenTotals && (
               <div className="metric-card">
-                <div className="metric-value">{formatTokens(metadata.token_usage.total_tokens)}</div>
+                <div className="metric-value">{formatTokens(tokenTotals.total)}</div>
                 <div className="metric-label">Tokens</div>
               </div>
             )}
           </div>
 
-          {metadata.token_usage && (
+          {tokenTotals && (
             <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--gray-50)', borderRadius: 'var(--border-radius)' }}>
               <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--gray-700)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Token Breakdown
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.75rem', fontSize: '0.875rem' }}>
-                {metadata.token_usage.total_prompt_tokens && (
-                  <div>
-                    <span style={{ color: 'var(--gray-600)' }}>Input: </span>
-                    <strong style={{ color: 'var(--gray-900)' }}>{formatTokens(metadata.token_usage.total_prompt_tokens)}</strong>
-                  </div>
-                )}
-                {metadata.token_usage.total_completion_tokens && (
-                  <div>
-                    <span style={{ color: 'var(--gray-600)' }}>Output: </span>
-                    <strong style={{ color: 'var(--gray-900)' }}>{formatTokens(metadata.token_usage.total_completion_tokens)}</strong>
-                  </div>
-                )}
+                <div>
+                  <span style={{ color: 'var(--gray-600)' }}>Input: </span>
+                  <strong style={{ color: 'var(--gray-900)' }}>{formatTokens(tokenTotals.totalPrompt)}</strong>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--gray-600)' }}>Output: </span>
+                  <strong style={{ color: 'var(--gray-900)' }}>{formatTokens(tokenTotals.totalCompletion)}</strong>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--gray-600)' }}>Total: </span>
+                  <strong style={{ color: 'var(--gray-900)' }}>{formatTokens(tokenTotals.total)}</strong>
+                </div>
               </div>
             </div>
           )}
