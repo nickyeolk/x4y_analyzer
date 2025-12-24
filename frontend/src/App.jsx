@@ -64,7 +64,6 @@ function App() {
         <>
           {analysisRequest && (
             <div className="card" style={{
-              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
               borderLeft: '4px solid var(--primary-color)'
             }}>
               <h2 style={{ marginBottom: '0.5rem', fontSize: '1.5rem', color: 'var(--gray-900)' }}>
@@ -127,7 +126,7 @@ function App() {
         </div>
       )}
 
-      <footer style={{ textAlign: 'center', marginTop: '3rem', paddingBottom: '2rem', color: 'var(--gray-500)', fontSize: '0.875rem' }}>
+      <footer style={{ textAlign: 'center', marginTop: '3rem', paddingBottom: '2rem', color: 'var(--gray-600)', fontSize: '0.875rem' }}>
         <p>Powered by GPT-4o via OpenRouter | Real-time SSE Streaming</p>
       </footer>
     </div>

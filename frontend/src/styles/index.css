@@ -33,9 +33,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: white;
+  background: var(--gray-900);
   min-height: 100vh;
-  color: var(--gray-900);
+  color: var(--gray-100);
 }
 
 #root {
@@ -50,7 +50,7 @@ body {
 
 .header {
   text-align: center;
-  color: var(--gray-900);
+  color: var(--gray-100);
   margin-bottom: 3rem;
   padding: 2rem 0;
 }
@@ -59,21 +59,18 @@ body {
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--gray-100);
 }
 
 .header p {
   font-size: 1.25rem;
-  color: var(--gray-600);
+  color: var(--gray-400);
 }
 
 .card {
   background: white;
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
   padding: 2rem;
   margin-bottom: 2rem;
 }
