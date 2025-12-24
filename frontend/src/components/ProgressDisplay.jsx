@@ -38,6 +38,8 @@ export function ProgressDisplay({ events, isConnected }) {
   const hasAnalysisStarted = events.some((e) => e.event === 'analysis_started');
   const hasAnalysisCompleted = events.some((e) => e.event === 'analysis_completed');
   const loopEvents = events.filter((e) => e.event === 'loop_triggered');
+  const keepaliveEvents = events.filter((e) => e.event === 'keepalive');
+  const latestKeepalive = keepaliveEvents[keepaliveEvents.length - 1];
 
   if (!hasAnalysisStarted && !isConnected) {
     return null;
@@ -47,7 +49,7 @@ export function ProgressDisplay({ events, isConnected }) {
     <div className="card">
       <div className="card-header">
         <h2>Analysis Progress</h2>
-        {isConnected && (
+        {isConnected && !hasAnalysisCompleted && (
           <span className="badge badge-info" style={{ marginLeft: '1rem' }}>
             🔴 Live
           </span>
@@ -55,6 +57,11 @@ export function ProgressDisplay({ events, isConnected }) {
         {hasAnalysisCompleted && (
           <span className="badge badge-success" style={{ marginLeft: '1rem' }}>
             ✓ Complete
+          </span>
+        )}
+        {latestKeepalive && !hasAnalysisCompleted && (
+          <span className="badge badge-info" style={{ marginLeft: '1rem' }}>
+            ⏱️ {latestKeepalive.data.elapsed_seconds}s elapsed
           </span>
         )}
       </div>

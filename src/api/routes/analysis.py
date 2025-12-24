@@ -99,13 +99,60 @@ async def stream_analysis_events(
             }
             await asyncio.sleep(0.1)  # Small delay for UX
 
-        # Execute the workflow
-        result = await analyze_startup(
+        # Execute the workflow with keepalive
+        # Create a task for the workflow execution
+        workflow_task = asyncio.create_task(
+            analyze_startup(
+                analysis_id=analysis_id,
+                correlation_id=correlation_id,
+                x_brand=x_brand,
+                y_market=y_market,
+                description=description,
+            )
+        )
+
+        # Send keepalive pings while workflow is running to prevent timeout
+        keepalive_counter = 0
+        max_wait_seconds = 600  # 10 minute timeout
+
+        while not workflow_task.done():
+            await asyncio.sleep(10)  # Ping every 10 seconds
+            if not workflow_task.done():
+                keepalive_counter += 1
+                elapsed = keepalive_counter * 10
+
+                # Check timeout
+                if elapsed >= max_wait_seconds:
+                    workflow_task.cancel()
+                    logger.error(
+                        "api_analysis_timeout",
+                        analysis_id=analysis_id,
+                        elapsed_seconds=elapsed,
+                    )
+                    raise asyncio.TimeoutError(f"Analysis exceeded {max_wait_seconds} seconds")
+
+                yield {
+                    "event": "keepalive",
+                    "data": json.dumps({
+                        "message": "Analysis in progress",
+                        "elapsed_seconds": elapsed,
+                        "timestamp": datetime.utcnow().isoformat(),
+                    })
+                }
+
+                logger.debug(
+                    "api_keepalive_sent",
+                    analysis_id=analysis_id,
+                    elapsed_seconds=elapsed,
+                )
+
+        # Get the result
+        result = await workflow_task
+
+        logger.info(
+            "api_workflow_completed",
             analysis_id=analysis_id,
-            correlation_id=correlation_id,
-            x_brand=x_brand,
-            y_market=y_market,
-            description=description,
+            elapsed_seconds=keepalive_counter * 10,
         )
 
         # Send agent completion events
@@ -164,6 +211,13 @@ async def stream_analysis_events(
         }
 
         # Send final result
+        logger.info(
+            "api_sending_final_result",
+            analysis_id=analysis_id,
+            status=result.get("status"),
+            has_strategist_plan=bool(result.get("strategist_plan")),
+        )
+
         yield {
             "event": "result",
             "data": json.dumps(result, default=str)
