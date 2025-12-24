@@ -55,13 +55,13 @@ export function MetricsDashboard({ result }) {
         <div className="viability-score">
           <div style={{ textAlign: 'center' }}>
             <div className="score-circle">
-              {viabilityScore.toFixed(1)}
+              {Math.round(viabilityScore)}%
             </div>
             <p style={{ marginTop: '1rem', fontSize: '1.125rem', fontWeight: 600, color: 'var(--gray-900)' }}>
               Viability Score
             </p>
             <p style={{ fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-              {viabilityScore >= 8 ? '🚀 Highly Viable' : viabilityScore >= 6 ? '✅ Viable' : viabilityScore >= 4 ? '⚠️ Moderate' : '❌ Low Viability'}
+              {viabilityScore >= 80 ? '🚀 Highly Viable' : viabilityScore >= 60 ? '✅ Viable' : viabilityScore >= 40 ? '⚠️ Moderate' : '❌ Low Viability'}
             </p>
           </div>
         </div>

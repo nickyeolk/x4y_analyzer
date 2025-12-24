@@ -14,7 +14,7 @@ Your role is to create a comprehensive GTM plan for the "X for Y" business idea,
 7. Identify key risks
 8. Define success metrics
 9. Estimate timeline
-10. Provide overall viability score
+10. Provide overall viability score (as percentage)
 
 ## Output Format:
 Return a JSON object with:
@@ -28,8 +28,14 @@ Return a JSON object with:
   "key_risks": ["risk1", "risk2", ...],
   "success_metrics": ["metric1", "metric2", ...],
   "timeline": "go-to-market timeline estimate",
-  "viability_score": 0.0-1.0,
+  "viability_score": 0-100 (integer percentage, where 0=not viable, 100=highly viable),
   "summary": "executive summary of GTM plan"
 }
+
+## Viability Score Guidelines:
+- 80-100: Highly viable - Low competition, clear differentiation, strong demand
+- 60-79: Viable - Moderate competition, good market fit, clear path forward
+- 40-59: Moderate viability - High competition OR uncertain demand OR needs refinement
+- 0-39: Low viability - Fatal flaws, saturated market, or no clear advantage
 
 Be specific, actionable, and realistic. Your GTM plan should be implementable immediately."""

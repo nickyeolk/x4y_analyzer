@@ -80,12 +80,18 @@ Create an actionable, realistic GTM plan that:
 7. Acknowledges key risks honestly
 8. Defines measurable success metrics
 9. Provides realistic timeline
-10. Assigns overall viability score (0.0-1.0)
+10. Assigns overall viability score (0-100 percentage)
 
 Consider:
 - Market saturation level: {researcher_findings.get('saturation_level', 'unknown')}
 - Competitor count: {researcher_findings.get('competitor_count', 0)}
 - Skeptic concerns: {', '.join(skeptic_critique.get('concerns', [])[:3])}
+
+Viability Score Guidelines:
+- 80-100%: Highly viable (low competition, clear differentiation, strong demand)
+- 60-79%: Viable (moderate competition, good fit, clear path forward)
+- 40-59%: Moderate (high competition OR uncertain demand)
+- 0-39%: Low viability (fatal flaws, saturated market, no clear advantage)
 
 Be realistic about viability. Don't oversell if market is saturated.
 """
@@ -119,7 +125,7 @@ Be realistic about viability. Don't oversell if market is saturated.
                 key_risks=analysis.get("key_risks", []),
                 success_metrics=analysis.get("success_metrics", []),
                 timeline=analysis.get("timeline", ""),
-                viability_score=analysis.get("viability_score", 0.5),
+                viability_score=analysis.get("viability_score", 50),
                 summary=analysis.get("summary", ""),
             )
 
@@ -165,7 +171,7 @@ Be realistic about viability. Don't oversell if market is saturated.
             state["final_recommendation"] = gtm_plan.summary
 
             # Determine if human review needed (low viability)
-            if gtm_plan.viability_score < 0.4:
+            if gtm_plan.viability_score < 40:
                 state["requires_human_review"] = True
                 logger.warning(
                     "low_viability_score",
@@ -225,7 +231,7 @@ Be realistic about viability. Don't oversell if market is saturated.
                 "key_risks": ["Unable to parse structured plan"],
                 "success_metrics": [],
                 "timeline": "Unknown",
-                "viability_score": 0.5,
+                "viability_score": 50,
                 "summary": llm_response.content[:500],
             }
             state["status"] = "completed"
