@@ -30,7 +30,7 @@ export function ResultsDisplay({ result }) {
 
           <div className="result-section">
             <h3>Business Model</h3>
-            <p style={{ color: 'var(--gray-700)', lineHeight: 1.6 }}>{analyst_insights.business_model}</p>
+            <p style={{ color: 'var(--gray-900)', lineHeight: 1.6 }}>{analyst_insights.business_model}</p>
           </div>
 
           {analyst_insights.key_differentiators.length > 0 && (
@@ -61,15 +61,15 @@ export function ResultsDisplay({ result }) {
 
           <div className="result-section">
             <h3>Market Overview</h3>
-            <p style={{ color: 'var(--gray-700)', lineHeight: 1.6, marginBottom: '1rem' }}>
+            <p style={{ color: 'var(--gray-900)', lineHeight: 1.6, marginBottom: '1rem' }}>
               <strong>Market:</strong> {researcher_findings.market_name}
             </p>
             {researcher_findings.market_size && (
-              <p style={{ color: 'var(--gray-700)', lineHeight: 1.6, marginBottom: '1rem' }}>
+              <p style={{ color: 'var(--gray-900)', lineHeight: 1.6, marginBottom: '1rem' }}>
                 <strong>Size:</strong> {researcher_findings.market_size}
               </p>
             )}
-            <p style={{ color: 'var(--gray-700)', lineHeight: 1.6 }}>
+            <p style={{ color: 'var(--gray-900)', lineHeight: 1.6 }}>
               <strong>Saturation:</strong>{' '}
               <span
                 className={`badge ${
@@ -190,18 +190,18 @@ export function ResultsDisplay({ result }) {
 
           <div className="result-section">
             <h3>Target Audience</h3>
-            <p style={{ color: 'var(--gray-700)', lineHeight: 1.6 }}>{strategist_plan.target_audience}</p>
+            <p style={{ color: 'var(--gray-900)', lineHeight: 1.6 }}>{strategist_plan.target_audience}</p>
           </div>
 
           <div className="result-section">
             <h3>Value Proposition</h3>
-            <p style={{ color: 'var(--gray-700)', lineHeight: 1.6 }}>{strategist_plan.value_proposition}</p>
+            <p style={{ color: 'var(--gray-900)', lineHeight: 1.6 }}>{strategist_plan.value_proposition}</p>
           </div>
 
           {strategist_plan.pricing_strategy && (
             <div className="result-section">
               <h3>Pricing Strategy</h3>
-              <p style={{ color: 'var(--gray-700)', lineHeight: 1.6 }}>{strategist_plan.pricing_strategy}</p>
+              <p style={{ color: 'var(--gray-900)', lineHeight: 1.6 }}>{strategist_plan.pricing_strategy}</p>
             </div>
           )}
 
@@ -263,9 +263,54 @@ export function ResultsDisplay({ result }) {
           {strategist_plan.timeline && (
             <div className="result-section">
               <h3>Timeline</h3>
-              <p style={{ color: 'var(--gray-700)', lineHeight: 1.6 }}>{strategist_plan.timeline}</p>
+              <p style={{ color: 'var(--gray-900)', lineHeight: 1.6 }}>{strategist_plan.timeline}</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Summary Section */}
+      {result.metadata && (
+        <div className="card" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05))' }}>
+          <div className="card-header">
+            <h2>📋 Analysis Summary</h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', padding: '1rem 0' }}>
+            <div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--gray-600)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Total Time
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--gray-900)' }}>
+                {result.metadata.total_duration_seconds < 60
+                  ? `${result.metadata.total_duration_seconds.toFixed(1)}s`
+                  : `${Math.floor(result.metadata.total_duration_seconds / 60)}m ${(result.metadata.total_duration_seconds % 60).toFixed(0)}s`
+                }
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--gray-600)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Status
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                <span className={`badge ${result.skeptic_approved ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '1rem' }}>
+                  {result.skeptic_approved ? '✓ Approved' : '⚠️ Needs Review'}
+                </span>
+              </div>
+            </div>
+
+            {result.loop_count > 0 && (
+              <div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--gray-600)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Quality Loops
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--gray-900)' }}>
+                  {result.loop_count} iteration{result.loop_count > 1 ? 's' : ''}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
