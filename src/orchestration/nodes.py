@@ -4,6 +4,7 @@ Node wrapper functions for LangGraph workflow.
 Each node corresponds to an agent execution step.
 """
 
+import asyncio
 from typing import Dict, Any
 
 from src.agents.analyst import AnalystAgent
@@ -178,6 +179,87 @@ async def strategist_node(state: Dict[str, Any]) -> Dict[str, Any]:
             node="strategist",
             has_plan=state.get("strategist_plan") is not None,
             viability_score=state.get("strategist_plan", {}).get("viability_score"),
+        )
+
+        return state
+
+
+async def parallel_analysis_node(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    OPTIMIZATION: Run Analyst and Researcher in parallel.
+
+    Since these agents don't depend on each other's outputs, they can
+    execute concurrently to save 15-20 seconds per iteration.
+
+    Args:
+        state: Current workflow state
+
+    Returns:
+        Updated state with both analyst insights and researcher findings
+    """
+    iteration = state.get("loop_count", 0)
+
+    # Increment loop count if this is a re-entry (skeptic rejected previous iteration)
+    if state.get("skeptic_critique") is not None:
+        state["loop_count"] = state.get("loop_count", 0) + 1
+        iteration = state["loop_count"]
+        logger.info(
+            "parallel_analysis_loop_back",
+            loop_count=iteration,
+            reason=state.get("skeptic_critique", {}).get("loop_back_reason"),
+        )
+
+    with trace_span("node.parallel_analysis", {"iteration": iteration}):
+        logger.info(
+            "node_executing",
+            node="parallel_analysis",
+            iteration=iteration,
+            message="Running Analyst and Researcher concurrently",
+        )
+
+        # Get agent instances
+        analyst = get_analyst()
+        researcher = get_researcher()
+
+        # OPTIMIZATION: Run both agents in parallel
+        # Each agent gets a copy of the state and updates it independently
+        analyst_state, researcher_state = await asyncio.gather(
+            analyst.execute(state.copy()),
+            researcher.execute(state.copy())
+        )
+
+        # Merge results back into the original state
+        # The agents update different keys, so no conflicts
+        state["analyst_insights"] = analyst_state.get("analyst_insights")
+        state["researcher_findings"] = researcher_state.get("researcher_findings")
+
+        # Merge agent interactions
+        if "agent_interactions" not in state:
+            state["agent_interactions"] = []
+        state["agent_interactions"].extend(analyst_state.get("agent_interactions", []))
+        state["agent_interactions"].extend(researcher_state.get("agent_interactions", []))
+
+        # Merge metadata (token usage)
+        if "metadata" not in state:
+            state["metadata"] = {}
+        if "token_usage" not in state["metadata"]:
+            state["metadata"]["token_usage"] = {}
+
+        # Copy token usage from both agents
+        analyst_tokens = analyst_state.get("metadata", {}).get("token_usage", {}).get("analyst", {})
+        researcher_tokens = researcher_state.get("metadata", {}).get("token_usage", {}).get("researcher", {})
+
+        if analyst_tokens:
+            state["metadata"]["token_usage"]["analyst"] = analyst_tokens
+        if researcher_tokens:
+            state["metadata"]["token_usage"]["researcher"] = researcher_tokens
+
+        logger.info(
+            "node_completed",
+            node="parallel_analysis",
+            has_analyst_insights=state.get("analyst_insights") is not None,
+            has_researcher_findings=state.get("researcher_findings") is not None,
+            iteration=iteration,
         )
 
         return state

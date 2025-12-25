@@ -4,6 +4,7 @@ The Researcher Agent - Market Research & Competitive Analysis
 Investigates the "Y" market in an "X for Y" business idea.
 """
 
+import asyncio
 import json
 from typing import Dict, Any
 from datetime import datetime
@@ -71,29 +72,36 @@ class ResearcherAgent(BaseAgent):
             market_query = f"{y_market} market size competitors landscape trends"
             logger.info("researcher_searching", query=market_query)
 
-        market_search = await self.tavily_tool.execute(
-            ToolInput(
-                tool_name="tavily_search",
-                parameters={
-                    "query": market_query,
-                    "max_results": 7 if is_loop_back else 5,  # More results on loop back
-                    "search_depth": "advanced",
-                },
+        # Step 2: Define competitor search query
+        competitor_query = f"{y_market} companies apps services startups competitors"
+
+        # OPTIMIZATION: Execute both searches in parallel using asyncio.gather
+        logger.info("researcher_parallel_search_started", market_query=market_query, competitor_query=competitor_query)
+
+        market_search, competitor_search = await asyncio.gather(
+            self.tavily_tool.execute(
+                ToolInput(
+                    tool_name="tavily_search",
+                    parameters={
+                        "query": market_query,
+                        "max_results": 7 if is_loop_back else 5,
+                        "search_depth": "advanced",
+                    },
+                )
+            ),
+            self.tavily_tool.execute(
+                ToolInput(
+                    tool_name="tavily_search",
+                    parameters={
+                        "query": competitor_query,
+                        "max_results": 7 if is_loop_back else 5,
+                        "search_depth": "advanced" if is_loop_back else "basic",
+                    },
+                )
             )
         )
 
-        # Step 2: Search for competitors
-        competitor_query = f"{y_market} companies apps services startups competitors"
-        competitor_search = await self.tavily_tool.execute(
-            ToolInput(
-                tool_name="tavily_search",
-                parameters={
-                    "query": competitor_query,
-                    "max_results": 7 if is_loop_back else 5,  # More results on loop back
-                    "search_depth": "advanced" if is_loop_back else "basic",  # Deeper search on loop back
-                },
-            )
-        )
+        logger.info("researcher_parallel_search_completed")
 
         # Extract search context
         market_context = ""

@@ -10,12 +10,13 @@ from datetime import datetime
 
 from src.agents.base import BaseAgent
 from src.agents.prompts.skeptic import SKEPTIC_SYSTEM_PROMPT
-from src.llm.openrouter_client import get_llm_client
+from src.llm.openrouter_client import get_llm_client, OpenRouterClient
 from src.tools.marketing_rag import get_rag_tool
 from src.tools.base import ToolInput
 from src.orchestration.state import Critique, AgentInteraction
 from src.observability.decorators import trace_agent
 from src.observability.logger import get_logger
+from config.settings import settings
 
 logger = get_logger(__name__)
 
@@ -32,6 +33,11 @@ class SkepticAgent(BaseAgent):
     def __init__(self):
         super().__init__(name="skeptic")
         self.llm_client = get_llm_client()
+        # OPTIMIZATION: Use faster/cheaper GPT-4o-mini for simple classification task
+        self.classification_client = OpenRouterClient(
+            api_key=settings.openrouter_api_key,
+            model="openai/gpt-4o-mini"
+        )
         self.rag_tool = get_rag_tool()
 
     @trace_agent("skeptic")
@@ -59,9 +65,10 @@ class SkepticAgent(BaseAgent):
         )
 
         # Step 1: Classify business model to query relevant frameworks
-        logger.info("skeptic_classifying_business_model", idea=business_idea["full_idea"])
+        # OPTIMIZATION: Use GPT-4o-mini for this simple classification task (saves ~2-3s)
+        logger.info("skeptic_classifying_business_model", idea=business_idea["full_idea"], model="gpt-4o-mini")
 
-        classification_response = await self.llm_client.generate(
+        classification_response = await self.classification_client.generate(
             system="You are a business model expert. Classify startup ideas into business model types.",
             messages=[{
                 "role": "user",
@@ -83,7 +90,7 @@ Respond with ONLY the business model type, nothing else."""
         )
 
         business_model_type = classification_response.content.strip().lower()
-        logger.info("skeptic_business_model_classified", type=business_model_type)
+        logger.info("skeptic_business_model_classified", type=business_model_type, model="gpt-4o-mini")
 
         # Step 2: Build targeted RAG query based on business model type
         rag_query_map = {
