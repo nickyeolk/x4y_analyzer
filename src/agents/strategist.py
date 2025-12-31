@@ -90,7 +90,7 @@ Consider:
 - Market saturation level: {researcher_findings.get('saturation_level', 'unknown')}
 - Competitor count: {researcher_findings.get('competitor_count', 0)}
 - Risk level: {risk_analysis.get('overall_risk_level', 'unknown')}
-- Key risks: {', '.join(risk_analysis.get('competitive_threats', [])[:2])}
+- Key risks: {', '.join(str(t) for t in risk_analysis.get('competitive_threats', [])[:2]) if risk_analysis.get('competitive_threats') else 'None identified'}
 
 Viability Score Guidelines:
 - 80-100%: Highly viable (low competition, clear differentiation, strong demand)
