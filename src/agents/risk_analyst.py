@@ -253,6 +253,122 @@ Provide a balanced, realistic assessment of what could go wrong.
             return state
 
 
+    async def execute_focused(self, state: Dict[str, Any], focus_query: str) -> Dict[str, Any]:
+        """
+        Execute focused risk analysis based on Strategist's specific query.
+
+        Args:
+            state: Current analysis state
+            focus_query: Specific question or area to investigate
+
+        Returns:
+            Focused risk analysis results
+        """
+        business_idea = state["business_idea"]
+
+        logger.info(
+            "risk_analyst_focused_analysis_started",
+            query=focus_query[:100],
+        )
+
+        # Use existing risk context
+        existing_analysis = state.get("risk_analysis", {})
+
+        # Focused search for specific risk area
+        search_query = f"{business_idea['full_idea']} {focus_query} risks challenges threats"
+        logger.info("risk_analyst_focused_search", query=search_query)
+
+        search_result = await self.tavily_tool.execute(
+            ToolInput(
+                tool_name="tavily_search",
+                parameters={
+                    "query": search_query,
+                    "max_results": 5,
+                    "search_depth": "advanced",
+                },
+            )
+        )
+
+        # Extract search context
+        search_context = ""
+        if search_result.success:
+            results = search_result.result.get("results", [])
+            search_context = "\n\n".join([
+                f"**{r['title']}**\n{r['content']}"
+                for r in results[:3]
+            ])
+
+        # Focused LLM call
+        user_message = f"""Focused Risk Analysis Request: {focus_query}
+
+Business Idea: {business_idea['full_idea']}
+
+EXISTING RISK ANALYSIS:
+{json.dumps(existing_analysis, indent=2)}
+
+ADDITIONAL WEB RESEARCH:
+{search_context}
+
+Provide detailed, focused risk analysis addressing the specific query above.
+Return JSON with:
+{{
+  "query": "{focus_query}",
+  "risks": ["risk1", "risk2", ...],
+  "insights": "detailed analysis",
+  "severity": "high|medium|low",
+  "confidence": 0.0-1.0
+}}
+"""
+
+        llm_response = await self.llm_client.generate(
+            system=RISK_ANALYST_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_message}],
+            max_tokens=1500,
+            temperature=0.7,
+        )
+
+        # Parse response
+        try:
+            content = llm_response.content
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0]
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0]
+
+            result = json.loads(content.strip())
+
+            logger.info(
+                "risk_analyst_focused_analysis_completed",
+                confidence=result.get("confidence", 0.7),
+            )
+
+            return {
+                "type": "focused_risk_analysis",
+                "agent": "risk_analyst",
+                "query": focus_query,
+                "risks": result.get("risks", []),
+                "insights": result.get("insights", ""),
+                "severity": result.get("severity", "medium"),
+                "confidence": result.get("confidence", 0.7),
+            }
+
+        except json.JSONDecodeError as e:
+            logger.error(
+                "risk_analyst_focused_parse_error",
+                error=str(e),
+                response=llm_response.content[:300],
+            )
+            return {
+                "type": "focused_risk_analysis",
+                "agent": "risk_analyst",
+                "query": focus_query,
+                "risks": [],
+                "insights": llm_response.content[:500],
+                "severity": "unknown",
+                "confidence": 0.5,
+            }
+
+
 def get_risk_analyst() -> RiskAnalystAgent:
     """Get or create RiskAnalyst agent instance."""
     return RiskAnalystAgent()

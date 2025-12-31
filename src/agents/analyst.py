@@ -230,3 +230,121 @@ INSTRUCTION: Address ALL of the above concerns in your analysis. Be MORE specifi
                 "confidence": 0.5,
             }
             return state
+
+    async def execute_focused(self, state: Dict[str, Any], focus_query: str) -> Dict[str, Any]:
+        """
+        Execute focused analysis based on Strategist's specific query.
+
+        This is called when the Strategist needs deeper analysis on a specific topic.
+
+        Args:
+            state: Current analysis state
+            focus_query: Specific question or area to investigate
+
+        Returns:
+            Focused analysis results
+        """
+        business_idea = state["business_idea"]
+        x_brand = business_idea["x_brand"]
+
+        logger.info(
+            "analyst_focused_analysis_started",
+            brand=x_brand,
+            query=focus_query[:100],
+        )
+
+        # Use existing brand context
+        existing_insights = state.get("analyst_insights", {})
+
+        # Search for specific information
+        search_query = f"{x_brand} {focus_query}"
+        logger.info("analyst_focused_search", query=search_query)
+
+        search_result = await self.tavily_tool.execute(
+            ToolInput(
+                tool_name="tavily_search",
+                parameters={
+                    "query": search_query,
+                    "max_results": 5,
+                    "search_depth": "advanced",
+                },
+            )
+        )
+
+        # Extract search context
+        search_context = ""
+        if search_result.success:
+            results = search_result.result.get("results", [])
+            search_context = "\n\n".join([
+                f"**{r['title']}**\n{r['content']}"
+                for r in results[:3]
+            ])
+
+        # Focused LLM call
+        user_message = f"""Focused Analysis Request: {focus_query}
+
+Brand: {x_brand}
+Business Idea: {business_idea['full_idea']}
+
+EXISTING BRAND ANALYSIS:
+{json.dumps(existing_insights, indent=2)}
+
+ADDITIONAL WEB RESEARCH:
+{search_context}
+
+Provide a detailed, focused analysis addressing the specific query above.
+Return JSON with:
+{{
+  "query": "{focus_query}",
+  "findings": ["finding1", "finding2", ...],
+  "insights": "detailed analysis",
+  "confidence": 0.0-1.0
+}}
+"""
+
+        llm_response = await self.llm_client.generate(
+            system=ANALYST_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_message}],
+            max_tokens=1500,
+            temperature=0.7,
+        )
+
+        # Parse response
+        try:
+            content = llm_response.content
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0]
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0]
+
+            result = json.loads(content.strip())
+
+            logger.info(
+                "analyst_focused_analysis_completed",
+                brand=x_brand,
+                confidence=result.get("confidence", 0.7),
+            )
+
+            return {
+                "type": "focused_analysis",
+                "agent": "analyst",
+                "query": focus_query,
+                "findings": result.get("findings", []),
+                "insights": result.get("insights", ""),
+                "confidence": result.get("confidence", 0.7),
+            }
+
+        except json.JSONDecodeError as e:
+            logger.error(
+                "analyst_focused_parse_error",
+                error=str(e),
+                response=llm_response.content[:300],
+            )
+            return {
+                "type": "focused_analysis",
+                "agent": "analyst",
+                "query": focus_query,
+                "findings": [],
+                "insights": llm_response.content[:500],
+                "confidence": 0.5,
+            }

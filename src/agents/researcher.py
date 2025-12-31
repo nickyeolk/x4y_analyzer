@@ -268,3 +268,119 @@ INSTRUCTION: Address ALL of the above concerns in your analysis. Be MORE specifi
                 "summary": llm_response.content[:200],
             }
             return state
+
+    async def execute_focused(self, state: Dict[str, Any], focus_query: str) -> Dict[str, Any]:
+        """
+        Execute focused market research based on Strategist's specific query.
+
+        Args:
+            state: Current analysis state
+            focus_query: Specific question or area to investigate
+
+        Returns:
+            Focused research results
+        """
+        business_idea = state["business_idea"]
+        y_market = business_idea["y_market"]
+
+        logger.info(
+            "researcher_focused_analysis_started",
+            market=y_market,
+            query=focus_query[:100],
+        )
+
+        # Use existing market context
+        existing_findings = state.get("researcher_findings", {})
+
+        # Focused search
+        search_query = f"{y_market} {focus_query}"
+        logger.info("researcher_focused_search", query=search_query)
+
+        search_result = await self.tavily_tool.execute(
+            ToolInput(
+                tool_name="tavily_search",
+                parameters={
+                    "query": search_query,
+                    "max_results": 5,
+                    "search_depth": "advanced",
+                },
+            )
+        )
+
+        # Extract search context
+        search_context = ""
+        if search_result.success:
+            results = search_result.result.get("results", [])
+            search_context = "\n\n".join([
+                f"**{r['title']}**\n{r['content']}"
+                for r in results[:3]
+            ])
+
+        # Focused LLM call
+        user_message = f"""Focused Research Request: {focus_query}
+
+Market: {y_market}
+Business Idea: {business_idea['full_idea']}
+
+EXISTING MARKET RESEARCH:
+{json.dumps(existing_findings, indent=2)}
+
+ADDITIONAL WEB RESEARCH:
+{search_context}
+
+Provide detailed, focused market research addressing the specific query above.
+Return JSON with:
+{{
+  "query": "{focus_query}",
+  "findings": ["finding1", "finding2", ...],
+  "insights": "detailed analysis",
+  "confidence": 0.0-1.0
+}}
+"""
+
+        llm_response = await self.llm_client.generate(
+            system=RESEARCHER_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_message}],
+            max_tokens=1500,
+            temperature=0.7,
+        )
+
+        # Parse response
+        try:
+            content = llm_response.content
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0]
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0]
+
+            result = json.loads(content.strip())
+
+            logger.info(
+                "researcher_focused_analysis_completed",
+                market=y_market,
+                confidence=result.get("confidence", 0.7),
+            )
+
+            return {
+                "type": "focused_research",
+                "agent": "researcher",
+                "query": focus_query,
+                "findings": result.get("findings", []),
+                "insights": result.get("insights", ""),
+                "confidence": result.get("confidence", 0.7),
+            }
+
+        except json.JSONDecodeError as e:
+            logger.error(
+                "researcher_focused_parse_error",
+                error=str(e),
+                response=llm_response.content[:300],
+            )
+            return {
+                "type": "focused_research",
+                "agent": "researcher",
+                "query": focus_query,
+                "findings": [],
+                "insights": llm_response.content[:500],
+                "confidence": 0.5,
+            }
