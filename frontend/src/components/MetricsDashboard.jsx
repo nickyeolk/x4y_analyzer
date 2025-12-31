@@ -15,20 +15,41 @@ export function MetricsDashboard({ result }) {
   const viabilityScore = result.strategist_plan?.viability_score ?? 0;
 
   const formatDuration = (seconds) => {
-    if (seconds < 60) return `${seconds.toFixed(1)}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = (seconds % 60).toFixed(0);
-    return `${minutes}m ${remainingSeconds}s`;
+    try {
+      if (seconds === null || seconds === undefined || isNaN(seconds)) return '0s';
+      const numSeconds = Number(seconds);
+      if (numSeconds < 60) return `${numSeconds.toFixed(1)}s`;
+      const minutes = Math.floor(numSeconds / 60);
+      const remainingSeconds = (numSeconds % 60).toFixed(0);
+      return `${minutes}m ${remainingSeconds}s`;
+    } catch (e) {
+      console.error('[MetricsDashboard] Error formatting duration:', e);
+      return '0s';
+    }
   };
 
   const formatCost = (cost) => {
-    return `$${cost.toFixed(4)}`;
+    try {
+      if (cost === null || cost === undefined || isNaN(cost)) return '$0.0000';
+      const numCost = Number(cost);
+      return `$${numCost.toFixed(4)}`;
+    } catch (e) {
+      console.error('[MetricsDashboard] Error formatting cost:', e);
+      return '$0.0000';
+    }
   };
 
   const formatTokens = (tokens) => {
-    if (tokens >= 1000000) return `${(tokens / 1000000).toFixed(2)}M`;
-    if (tokens >= 1000) return `${(tokens / 1000).toFixed(1)}K`;
-    return tokens.toString();
+    try {
+      if (tokens === null || tokens === undefined || isNaN(tokens)) return '0';
+      const numTokens = Number(tokens);
+      if (numTokens >= 1000000) return `${(numTokens / 1000000).toFixed(2)}M`;
+      if (numTokens >= 1000) return `${(numTokens / 1000).toFixed(1)}K`;
+      return numTokens.toString();
+    } catch (e) {
+      console.error('[MetricsDashboard] Error formatting tokens:', e);
+      return '0';
+    }
   };
 
   // Calculate total tokens from per-agent token usage
