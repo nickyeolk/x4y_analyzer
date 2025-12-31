@@ -56,17 +56,8 @@ export function useSSE(url, body, shouldConnect = false) {
 
         let buffer = '';
 
-        while (true) {
-          const { done, value } = await reader.read();
-
-          if (done) {
-            break;
-          }
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
+        // Helper function to process lines
+        const processLines = (lines) => {
           let currentEvent = null;
 
           for (const line of lines) {
@@ -108,6 +99,26 @@ export function useSSE(url, body, shouldConnect = false) {
               currentEvent = null;
             }
           }
+        };
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) {
+            // IMPORTANT: Process any remaining buffered data before breaking
+            if (buffer.trim()) {
+              console.log('[SSE] Processing remaining buffer before closing:', buffer.substring(0, 100));
+              const lines = buffer.split('\n');
+              processLines(lines);
+            }
+            break;
+          }
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          processLines(lines);
         }
 
         console.log('[SSE] Stream ended naturally, closing connection');
