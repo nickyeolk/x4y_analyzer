@@ -46,8 +46,21 @@ class MarketResearch:
 
 
 @dataclass
+class RiskAnalysis:
+    """Risk analysis from the Risk Analyst agent."""
+    competitive_threats: List[str] = field(default_factory=list)
+    market_risks: List[str] = field(default_factory=list)
+    execution_challenges: List[str] = field(default_factory=list)
+    financial_risks: List[str] = field(default_factory=list)
+    fatal_flaws: List[str] = field(default_factory=list)
+    overall_risk_level: str = "medium"  # low, medium, high
+    summary: str = ""
+    confidence: float = 0.0
+
+
+@dataclass
 class Critique:
-    """Critique from the Skeptic agent."""
+    """Critique from the Skeptic agent (DEPRECATED - kept for backward compatibility)."""
     approved: bool = False
     concerns: List[str] = field(default_factory=list)
     fatal_flaws: List[str] = field(default_factory=list)
@@ -102,7 +115,7 @@ class AnalysisState:
     """
     Complete state for startup analysis workflow.
 
-    Supports cyclic workflows with loop tracking for Skeptic feedback.
+    Supports dynamic research coordination with the Strategist agent.
     """
     # Identity
     analysis_id: str
@@ -115,13 +128,22 @@ class AnalysisState:
     # Agent Results
     analyst_insights: Optional[BrandDNA] = None
     researcher_findings: Optional[MarketResearch] = None
-    skeptic_critique: Optional[Critique] = None
+    risk_analysis: Optional[RiskAnalysis] = None
     strategist_plan: Optional[GTMPlan] = None
 
-    # Workflow Control
+    # Coordination Control
+    coordination_iteration: int = 0
+    max_coordination_iterations: int = 3
+    ready_for_synthesis: bool = False
+    follow_up_research: List[Dict[str, Any]] = field(default_factory=list)
+
+    # Legacy Fields (DEPRECATED - kept for backward compatibility)
+    skeptic_critique: Optional[Critique] = None
+    skeptic_approved: bool = False
     loop_count: int = 0
     max_loops: int = 3
-    skeptic_approved: bool = False
+
+    # Current State
     current_agent: str = ""
 
     # History & Observability
@@ -142,11 +164,18 @@ class AnalysisState:
             "business_idea": asdict(self.business_idea),
             "analyst_insights": asdict(self.analyst_insights) if self.analyst_insights else None,
             "researcher_findings": asdict(self.researcher_findings) if self.researcher_findings else None,
-            "skeptic_critique": asdict(self.skeptic_critique) if self.skeptic_critique else None,
+            "risk_analysis": asdict(self.risk_analysis) if self.risk_analysis else None,
             "strategist_plan": asdict(self.strategist_plan) if self.strategist_plan else None,
+            "coordination_iteration": self.coordination_iteration,
+            "max_coordination_iterations": self.max_coordination_iterations,
+            "ready_for_synthesis": self.ready_for_synthesis,
+            "follow_up_research": self.follow_up_research,
+            # Legacy fields
+            "skeptic_critique": asdict(self.skeptic_critique) if self.skeptic_critique else None,
+            "skeptic_approved": self.skeptic_approved,
             "loop_count": self.loop_count,
             "max_loops": self.max_loops,
-            "skeptic_approved": self.skeptic_approved,
+            # Current state
             "current_agent": self.current_agent,
             "agent_interactions": [asdict(i) for i in self.agent_interactions],
             "metadata": asdict(self.metadata),
@@ -169,11 +198,18 @@ class AnalysisState:
             business_idea=BusinessIdea(**data["business_idea"]),
             analyst_insights=BrandDNA(**data["analyst_insights"]) if data.get("analyst_insights") else None,
             researcher_findings=MarketResearch(**data["researcher_findings"]) if data.get("researcher_findings") else None,
-            skeptic_critique=Critique(**data["skeptic_critique"]) if data.get("skeptic_critique") else None,
+            risk_analysis=RiskAnalysis(**data["risk_analysis"]) if data.get("risk_analysis") else None,
             strategist_plan=GTMPlan(**data["strategist_plan"]) if data.get("strategist_plan") else None,
+            coordination_iteration=data.get("coordination_iteration", 0),
+            max_coordination_iterations=data.get("max_coordination_iterations", 3),
+            ready_for_synthesis=data.get("ready_for_synthesis", False),
+            follow_up_research=data.get("follow_up_research", []),
+            # Legacy fields
+            skeptic_critique=Critique(**data["skeptic_critique"]) if data.get("skeptic_critique") else None,
+            skeptic_approved=data.get("skeptic_approved", False),
             loop_count=data.get("loop_count", 0),
             max_loops=data.get("max_loops", 3),
-            skeptic_approved=data.get("skeptic_approved", False),
+            # Current state
             current_agent=data.get("current_agent", ""),
             agent_interactions=[AgentInteraction(**i) for i in data.get("agent_interactions", [])],
             metadata=AnalysisMetadata(**data.get("metadata", {})),
