@@ -50,24 +50,26 @@ class RiskAnalystAgent(BaseAgent):
         Returns:
             Updated state with risk analysis
         """
-        business_idea = state["business_idea"]
-        analyst_insights = state.get("analyst_insights", {})
-        researcher_findings = state.get("researcher_findings", {})
+        business_idea = state.get("business_idea") or {}
+        analyst_insights = state.get("analyst_insights") or {}
+        researcher_findings = state.get("researcher_findings") or {}
+
+        full_idea = business_idea.get("full_idea", "Unknown business idea")
 
         logger.info(
             "risk_analyst_started",
-            idea=business_idea["full_idea"],
+            idea=full_idea,
         )
 
         # Step 1: Classify business model to query relevant risk frameworks
         # OPTIMIZATION: Use GPT-4o-mini for this simple classification task (saves ~2-3s)
-        logger.info("risk_analyst_classifying_business_model", idea=business_idea["full_idea"], model="gpt-4o-mini")
+        logger.info("risk_analyst_classifying_business_model", idea=full_idea, model="gpt-4o-mini")
 
         classification_response = await self.classification_client.generate(
             system="You are a business model expert. Classify startup ideas into business model types.",
             messages=[{
                 "role": "user",
-                "content": f"""Classify this business idea into ONE primary business model type: {business_idea['full_idea']}
+                "content": f"""Classify this business idea into ONE primary business model type: {full_idea}
 
 Choose from:
 - marketplace (two-sided platforms like Uber, Airbnb, Upwork)
@@ -130,7 +132,7 @@ Respond with ONLY the business model type, nothing else."""
         # Step 3: Prepare risk analysis context
         user_message = f"""Analyze the risks and threats for this business idea:
 
-Business Idea: {business_idea['full_idea']}
+Business Idea: {full_idea}
 
 ANALYST'S BRAND DNA ANALYSIS:
 {json.dumps(analyst_insights, indent=2)}
@@ -264,18 +266,19 @@ Provide a balanced, realistic assessment of what could go wrong.
         Returns:
             Focused risk analysis results
         """
-        business_idea = state["business_idea"]
+        business_idea = state.get("business_idea") or {}
 
         logger.info(
             "risk_analyst_focused_analysis_started",
-            query=focus_query[:100],
+            query=focus_query[:100] if focus_query else "",
         )
 
         # Use existing risk context
         existing_analysis = state.get("risk_analysis", {})
+        full_idea = business_idea.get("full_idea", "Unknown business idea")
 
         # Focused search for specific risk area
-        search_query = f"{business_idea['full_idea']} {focus_query} risks challenges threats"
+        search_query = f"{full_idea} {focus_query} risks challenges threats"
         logger.info("risk_analyst_focused_search", query=search_query)
 
         search_result = await self.tavily_tool.execute(
@@ -301,7 +304,7 @@ Provide a balanced, realistic assessment of what could go wrong.
         # Focused LLM call
         user_message = f"""Focused Risk Analysis Request: {focus_query}
 
-Business Idea: {business_idea['full_idea']}
+Business Idea: {full_idea}
 
 EXISTING RISK ANALYSIS:
 {json.dumps(existing_analysis, indent=2)}

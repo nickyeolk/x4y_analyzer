@@ -45,8 +45,8 @@ class ResearcherAgent(BaseAgent):
         Returns:
             Updated state with researcher findings
         """
-        business_idea = state["business_idea"]
-        y_market = business_idea["y_market"]
+        business_idea = state.get("business_idea") or {}
+        y_market = business_idea.get("y_market", "Unknown market")
         iteration = state.get("loop_count", 0)
 
         # Check if this is a loop back (skeptic rejected previous iteration)
@@ -125,9 +125,10 @@ class ResearcherAgent(BaseAgent):
             ])
 
         # Step 3: LLM analysis with skeptic feedback if available
+        full_idea = business_idea.get('full_idea', f'Business idea targeting {y_market}')
         user_message = f"""Analyze the market: {y_market}
 
-Business Idea Context: {business_idea['full_idea']}
+Business Idea Context: {full_idea}
 
 Market Research:
 {market_context}
@@ -280,13 +281,13 @@ INSTRUCTION: Address ALL of the above concerns in your analysis. Be MORE specifi
         Returns:
             Focused research results
         """
-        business_idea = state["business_idea"]
-        y_market = business_idea["y_market"]
+        business_idea = state.get("business_idea") or {}
+        y_market = business_idea.get("y_market", "Unknown market")
 
         logger.info(
             "researcher_focused_analysis_started",
             market=y_market,
-            query=focus_query[:100],
+            query=focus_query[:100] if focus_query else "",
         )
 
         # Use existing market context
@@ -317,10 +318,11 @@ INSTRUCTION: Address ALL of the above concerns in your analysis. Be MORE specifi
             ])
 
         # Focused LLM call
+        full_idea = business_idea.get('full_idea', f'Business idea targeting {y_market}')
         user_message = f"""Focused Research Request: {focus_query}
 
 Market: {y_market}
-Business Idea: {business_idea['full_idea']}
+Business Idea: {full_idea}
 
 EXISTING MARKET RESEARCH:
 {json.dumps(existing_findings, indent=2)}

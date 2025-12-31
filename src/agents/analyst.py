@@ -44,8 +44,8 @@ class AnalystAgent(BaseAgent):
         Returns:
             Updated state with analyst insights
         """
-        business_idea = state["business_idea"]
-        x_brand = business_idea["x_brand"]
+        business_idea = state.get("business_idea") or {}
+        x_brand = business_idea.get("x_brand", "Unknown brand")
         iteration = state.get("loop_count", 0)
 
         # Check if this is a loop back (skeptic rejected previous iteration)
@@ -95,9 +95,10 @@ class AnalystAgent(BaseAgent):
             ])
 
         # Step 2: LLM analysis with skeptic feedback if available
+        full_idea = business_idea.get('full_idea', f'{x_brand} business idea')
         user_message = f"""Analyze the brand: {x_brand}
 
-Business Idea Context: {business_idea['full_idea']}
+Business Idea Context: {full_idea}
 
 Web Search Results:
 {search_context}"""
@@ -244,13 +245,13 @@ INSTRUCTION: Address ALL of the above concerns in your analysis. Be MORE specifi
         Returns:
             Focused analysis results
         """
-        business_idea = state["business_idea"]
-        x_brand = business_idea["x_brand"]
+        business_idea = state.get("business_idea") or {}
+        x_brand = business_idea.get("x_brand", "Unknown brand")
 
         logger.info(
             "analyst_focused_analysis_started",
             brand=x_brand,
-            query=focus_query[:100],
+            query=focus_query[:100] if focus_query else "",
         )
 
         # Use existing brand context
@@ -281,10 +282,11 @@ INSTRUCTION: Address ALL of the above concerns in your analysis. Be MORE specifi
             ])
 
         # Focused LLM call
+        full_idea = business_idea.get('full_idea', f'{x_brand} business idea')
         user_message = f"""Focused Analysis Request: {focus_query}
 
 Brand: {x_brand}
-Business Idea: {business_idea['full_idea']}
+Business Idea: {full_idea}
 
 EXISTING BRAND ANALYSIS:
 {json.dumps(existing_insights, indent=2)}
