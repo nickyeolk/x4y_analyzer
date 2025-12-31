@@ -303,16 +303,17 @@ async def strategist_coordination_node(state: Dict[str, Any]) -> Dict[str, Any]:
         return state
 
     with trace_span("node.strategist_coordination", {"iteration": iteration}):
-        business_idea = state["business_idea"]
-        analyst_insights = state.get("analyst_insights", {})
-        researcher_findings = state.get("researcher_findings", {})
-        risk_analysis = state.get("risk_analysis", {})
+        business_idea = state.get("business_idea", {})
+        analyst_insights = state.get("analyst_insights") or {}
+        researcher_findings = state.get("researcher_findings") or {}
+        risk_analysis = state.get("risk_analysis") or {}
 
         # Get follow-up research if it exists
         follow_up_research = state.get("follow_up_research", [])
 
         # Prepare context for Strategist
-        user_message = f"""Business Idea: {business_idea['full_idea']}
+        full_idea = business_idea.get('full_idea', 'Unknown business idea')
+        user_message = f"""Business Idea: {full_idea}
 
 CURRENT RESEARCH:
 
@@ -367,6 +368,11 @@ Be thoughtful. Only request follow-up if genuinely needed.
 
         # Parse response
         try:
+            if not llm_response or not hasattr(llm_response, 'content'):
+                logger.error("strategist_coordination_invalid_response", response=llm_response)
+                state["ready_for_synthesis"] = True
+                return state
+
             content = llm_response.content
             if "```json" in content:
                 content = content.split("```json")[1].split("```")[0]
@@ -397,6 +403,10 @@ Be thoughtful. Only request follow-up if genuinely needed.
                     risk_analyst = get_risk_analyst()
 
                     for request in requests:
+                        if not request or not isinstance(request, dict):
+                            logger.warning("strategist_invalid_request", request=request)
+                            continue
+
                         agent_name = request.get("agent")
                         query = request.get("query")
 
