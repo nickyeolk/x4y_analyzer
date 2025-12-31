@@ -252,11 +252,16 @@ async def stream_analysis_events(
             message="Result event sent, stream should close after this",
         )
 
+        # IMPORTANT: Small delay to ensure the result event is flushed to client
+        # before the generator returns and closes the stream
+        await asyncio.sleep(0.5)
+
         logger.info(
             "api_analysis_completed",
             analysis_id=analysis_id,
             status=result.get("status"),
             viability_score=result.get("strategist_plan", {}).get("viability_score"),
+            message="Generator will now return and close stream",
         )
 
         # Generator function ends here, stream should close
