@@ -61,23 +61,14 @@ export function useSSE(url, body, shouldConnect = false) {
 
         // Helper function to process lines
         const processLines = (lines) => {
-
-          console.log(`[SSE] processLines called with ${lines.length} lines`);
-
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            console.log(`[SSE] Line ${i}: "${line.substring(0, 50)}${line.length > 50 ? '...' : ''}"`);
-
+          for (const line of lines) {
             if (line.startsWith('event:')) {
               currentEvent = line.substring(6).trim();
-              console.log(`[SSE] Found event: ${currentEvent}`);
             } else if (line.startsWith('data:')) {
               const data = line.substring(5).trim();
-              console.log(`[SSE] Found data line, currentEvent: ${currentEvent}, data length: ${data.length}`);
 
               if (data && currentEvent) {
                 try {
-                  console.log(`[SSE] Parsing event: ${currentEvent}, data length: ${data.length}`);
                   const parsedData = JSON.parse(data);
                   const event = {
                     event: currentEvent,
@@ -87,14 +78,12 @@ export function useSSE(url, body, shouldConnect = false) {
 
                   setEvents(prev => [...prev, event]);
 
-                  console.log(`[SSE] Received event: ${currentEvent}`, { timestamp: event.timestamp });
+                  console.log(`[SSE] Received event: ${currentEvent}`);
 
                   // Store the final result
                   if (currentEvent === 'result') {
-                    console.log('[SSE] Final result received, setting result state');
-                    console.log('[SSE] Result keys:', Object.keys(parsedData));
+                    console.log('[SSE] Final result received');
                     setResult(parsedData);
-                    // Note: Stream should close after this, but connection may take a moment
                   }
 
                   // Handle errors
@@ -103,18 +92,11 @@ export function useSSE(url, body, shouldConnect = false) {
                     setError(parsedData);
                   }
                 } catch (e) {
-                  console.error('[SSE] Error parsing SSE data:', e);
-                  console.error('[SSE] Failed event:', currentEvent, 'data preview:', data.substring(0, 100));
+                  console.error('[SSE] Error parsing SSE data:', e, 'event:', currentEvent);
                 }
-              } else {
-                console.log(`[SSE] Skipping data line - data: ${!!data}, currentEvent: ${currentEvent}`);
               }
 
               currentEvent = null;
-            } else if (line.trim() === '') {
-              console.log(`[SSE] Empty line (event separator)`);
-            } else {
-              console.log(`[SSE] Unrecognized line format: "${line.substring(0, 30)}"`);
             }
           }
         };
@@ -128,16 +110,11 @@ export function useSSE(url, body, shouldConnect = false) {
           }
 
           if (done) {
-            // IMPORTANT: Process any remaining buffered data before breaking
-            console.log('[SSE] Stream done. Buffer length:', buffer.length);
-            console.log('[SSE] Buffer contains "result":', buffer.includes('result'));
+            // Process any remaining buffered data before breaking
             if (buffer.trim()) {
-              console.log('[SSE] Processing remaining buffer, first 200 chars:', buffer.substring(0, 200));
               const lines = buffer.split('\n');
-              console.log('[SSE] Buffer split into', lines.length, 'lines');
               processLines(lines);
             }
-            console.log('[SSE] Stream done, final buffer processed');
             break;
           }
 
