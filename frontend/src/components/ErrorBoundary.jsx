@@ -14,13 +14,16 @@ export class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     // Log the error to state so we can display it
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    this.state = {
+    console.error('Error type:', typeof error);
+    console.error('Error keys:', error ? Object.keys(error) : 'null');
+    console.error('Error string:', String(error));
+
+    // Use setState instead of direct mutation
+    this.setState({
       hasError: true,
       error: error,
       errorInfo: errorInfo,
-    };
-    // Force update to show error
-    this.forceUpdate();
+    });
   }
 
   render() {
@@ -98,7 +101,7 @@ export class ErrorBoundary extends React.Component {
                 fontFamily: 'monospace',
                 wordBreak: 'break-word',
               }}>
-                {this.state.error?.toString() || 'Unknown error'}
+                {this.state.error?.message || this.state.error?.toString() || String(this.state.error) || 'Unknown error - check console logs in debug panel'}
               </p>
             </div>
 
