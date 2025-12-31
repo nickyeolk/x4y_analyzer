@@ -68,6 +68,7 @@ export function useSSE(url, body, shouldConnect = false) {
 
               if (data && currentEvent) {
                 try {
+                  console.log(`[SSE] Parsing event: ${currentEvent}, data length: ${data.length}`);
                   const parsedData = JSON.parse(data);
                   const event = {
                     event: currentEvent,
@@ -82,6 +83,7 @@ export function useSSE(url, body, shouldConnect = false) {
                   // Store the final result
                   if (currentEvent === 'result') {
                     console.log('[SSE] Final result received, setting result state');
+                    console.log('[SSE] Result keys:', Object.keys(parsedData));
                     setResult(parsedData);
                     // Note: Stream should close after this, but connection may take a moment
                   }
@@ -92,7 +94,8 @@ export function useSSE(url, body, shouldConnect = false) {
                     setError(parsedData);
                   }
                 } catch (e) {
-                  console.error('Error parsing SSE data:', e);
+                  console.error('[SSE] Error parsing SSE data:', e);
+                  console.error('[SSE] Failed event:', currentEvent, 'data preview:', data.substring(0, 100));
                 }
               }
 
@@ -111,9 +114,12 @@ export function useSSE(url, body, shouldConnect = false) {
 
           if (done) {
             // IMPORTANT: Process any remaining buffered data before breaking
+            console.log('[SSE] Stream done. Buffer length:', buffer.length);
+            console.log('[SSE] Buffer contains "result":', buffer.includes('result'));
             if (buffer.trim()) {
-              console.log('[SSE] Processing remaining buffer before closing:', buffer.substring(0, 100));
+              console.log('[SSE] Processing remaining buffer, first 200 chars:', buffer.substring(0, 200));
               const lines = buffer.split('\n');
+              console.log('[SSE] Buffer split into', lines.length, 'lines');
               processLines(lines);
             }
             console.log('[SSE] Stream done, final buffer processed');
