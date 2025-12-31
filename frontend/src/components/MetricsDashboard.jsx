@@ -3,8 +3,16 @@ export function MetricsDashboard({ result }) {
     return null;
   }
 
-  const { metadata, loop_count, skeptic_approved } = result;
-  const viabilityScore = result.strategist_plan?.viability_score || 0;
+  // Debug log
+  console.log('[MetricsDashboard] Rendering with result:', result);
+
+  const { metadata } = result;
+  // Support both new and legacy field names
+  const coordination_iteration = result.coordination_iteration || 0;
+  const loop_count = result.loop_count || 0;
+  const iterations = coordination_iteration > 0 ? coordination_iteration : loop_count;
+  const skeptic_approved = result.skeptic_approved || false;
+  const viabilityScore = result.strategist_plan?.viability_score ?? 0;
 
   const formatDuration = (seconds) => {
     if (seconds < 60) return `${seconds.toFixed(1)}s`;
@@ -25,15 +33,30 @@ export function MetricsDashboard({ result }) {
 
   // Calculate total tokens from per-agent token usage
   const calculateTotalTokens = () => {
-    if (!metadata.token_usage) return null;
+    if (!metadata.token_usage || typeof metadata.token_usage !== 'object') return null;
 
     let totalPrompt = 0;
     let totalCompletion = 0;
 
-    Object.values(metadata.token_usage).forEach(agentUsage => {
-      totalPrompt += agentUsage.prompt_tokens || 0;
-      totalCompletion += agentUsage.completion_tokens || 0;
-    });
+    try {
+      Object.values(metadata.token_usage).forEach(agentUsage => {
+        if (agentUsage && typeof agentUsage === 'object') {
+          totalPrompt += agentUsage.prompt_tokens || agentUsage.classification_prompt_tokens || 0;
+          totalCompletion += agentUsage.completion_tokens || agentUsage.classification_completion_tokens || 0;
+
+          // Handle combined tokens (for agents like risk_analyst that track multiple calls)
+          if (agentUsage.analysis_prompt_tokens) {
+            totalPrompt += agentUsage.analysis_prompt_tokens || 0;
+          }
+          if (agentUsage.analysis_completion_tokens) {
+            totalCompletion += agentUsage.analysis_completion_tokens || 0;
+          }
+        }
+      });
+    } catch (e) {
+      console.error('[MetricsDashboard] Error calculating tokens:', e);
+      return null;
+    }
 
     return {
       totalPrompt,
@@ -67,12 +90,19 @@ export function MetricsDashboard({ result }) {
         </div>
 
         <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <span className={`badge ${skeptic_approved ? 'badge-success' : 'badge-warning'}`}>
-            {skeptic_approved ? '✓ Skeptic Approved' : '⚠️ Needs Review'}
-          </span>
-          {loop_count > 0 && (
+          {coordination_iteration > 0 && (
+            <span className="badge badge-info">
+              🔄 {coordination_iteration} Coordination Iteration{coordination_iteration > 1 ? 's' : ''}
+            </span>
+          )}
+          {loop_count > 0 && coordination_iteration === 0 && (
             <span className="badge badge-info">
               🔄 {loop_count} Quality Loop{loop_count > 1 ? 's' : ''}
+            </span>
+          )}
+          {skeptic_approved && (
+            <span className="badge badge-success">
+              ✓ Approved
             </span>
           )}
         </div>
@@ -94,17 +124,17 @@ export function MetricsDashboard({ result }) {
         <div style={{ padding: '1rem' }}>
           <div className="metrics-grid">
             <div className="metric-card">
-              <div className="metric-value">{formatDuration(metadata.total_duration_seconds)}</div>
+              <div className="metric-value">{formatDuration(metadata.total_duration_seconds || 0)}</div>
               <div className="metric-label">Duration</div>
             </div>
 
             <div className="metric-card">
-              <div className="metric-value">{formatCost(metadata.cost_usd)}</div>
+              <div className="metric-value">{formatCost(metadata.cost_usd || 0)}</div>
               <div className="metric-label">Cost (USD)</div>
             </div>
 
             <div className="metric-card">
-              <div className="metric-value">{loop_count}</div>
+              <div className="metric-value">{iterations}</div>
               <div className="metric-label">Iterations</div>
             </div>
 

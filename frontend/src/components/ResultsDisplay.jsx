@@ -3,6 +3,9 @@ export function ResultsDisplay({ result }) {
     return null;
   }
 
+  // Debug log the result structure
+  console.log('[ResultsDisplay] Rendering with result:', result);
+
   const {
     analyst_insights,
     researcher_findings,
@@ -10,6 +13,29 @@ export function ResultsDisplay({ result }) {
     strategist_plan,
     skeptic_critique, // Legacy support
   } = result;
+
+  // Check if we have any content to display
+  const hasContent = analyst_insights || researcher_findings || risk_analysis || strategist_plan || skeptic_critique;
+
+  if (!hasContent) {
+    console.warn('[ResultsDisplay] Result object exists but has no displayable content');
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h2>⚠️ No Results Available</h2>
+        </div>
+        <div style={{ padding: '1rem' }}>
+          <p>The analysis completed but no results were generated. Please try again.</p>
+          <details style={{ marginTop: '1rem', fontSize: '0.875rem', color: 'var(--gray-600)' }}>
+            <summary>Debug Information</summary>
+            <pre style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--gray-100)', borderRadius: '4px', overflow: 'auto' }}>
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          </details>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
