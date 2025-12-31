@@ -12,11 +12,12 @@ from src.orchestration.state import create_initial_state
 from src.orchestration.nodes import (
     analyst_node,
     researcher_node,
-    skeptic_node,
     strategist_node,
     parallel_analysis_node,
+    strategist_coordination_node,
+    strategist_synthesis_node,
 )
-from src.orchestration.edges import route_after_skeptic
+from src.orchestration.edges import route_after_coordination
 from src.observability.logger import get_logger
 from src.observability.tracer import trace_span
 from src.observability.metrics import record_ticket_processed
@@ -28,46 +29,46 @@ def create_analysis_graph():
     """
     Create the LangGraph workflow for startup analysis.
 
-    Workflow (OPTIMIZED):
-    1. Parallel Analysis → Analyst and Researcher run concurrently (SAVES 15-20s)
-    2. Skeptic → evaluates quality, decides:
-       - If approved: → Strategist
-       - If rejected: → loop back to Parallel Analysis (up to max_loops)
-    3. Strategist → creates final GTM plan
+    Workflow (OPTIMIZED with Dynamic Research Coordination):
+    1. Parallel Analysis → Analyst, Researcher, and Risk Analyst run concurrently (SAVES 15-20s)
+    2. Strategist Coordination → reviews all research, decides:
+       - If gaps identified: requests targeted follow-up research, loops back (up to max_coordination_iterations)
+       - If sufficient: proceeds to synthesis
+    3. Strategist Synthesis → creates final GTM plan
 
     Returns:
         Compiled StateGraph
     """
-    logger.info("creating_analysis_graph", optimization="parallel_execution_enabled")
+    logger.info("creating_analysis_graph", optimization="parallel_execution_with_dynamic_coordination")
 
     # Create state graph
     workflow = StateGraph(dict)
 
     # Add nodes
-    # OPTIMIZATION: Use parallel_analysis_node instead of separate analyst and researcher
+    # OPTIMIZATION: Use parallel_analysis_node (Analyst + Researcher + Risk Analyst run concurrently)
     workflow.add_node("parallel_analysis", parallel_analysis_node)
-    workflow.add_node("skeptic", skeptic_node)
-    workflow.add_node("strategist", strategist_node)
+    workflow.add_node("strategist_coordination", strategist_coordination_node)
+    workflow.add_node("strategist_synthesis", strategist_synthesis_node)
 
     # Define edges
-    # OPTIMIZATION: Start with parallel analysis (Analyst + Researcher run concurrently)
+    # Start with parallel analysis (3 agents run concurrently)
     workflow.set_entry_point("parallel_analysis")
-    workflow.add_edge("parallel_analysis", "skeptic")
+    workflow.add_edge("parallel_analysis", "strategist_coordination")
 
-    # Conditional edge after skeptic (LOOP LOGIC)
+    # Conditional edge after coordination (COORDINATION LOOP LOGIC)
     workflow.add_conditional_edges(
-        "skeptic",
-        route_after_skeptic,
+        "strategist_coordination",
+        route_after_coordination,
         {
-            "analyst": "parallel_analysis",      # Loop back to parallel analysis if not approved
-            "strategist": "strategist",  # Continue if approved
+            "coordination": "strategist_coordination",  # Loop back for more research
+            "synthesis": "strategist_synthesis",        # Proceed to final synthesis
         },
     )
 
-    # End after strategist
-    workflow.add_edge("strategist", END)
+    # End after synthesis
+    workflow.add_edge("strategist_synthesis", END)
 
-    logger.info("analysis_graph_created", optimization="parallel_execution")
+    logger.info("analysis_graph_created", optimization="parallel_execution_with_dynamic_coordination")
 
     return workflow.compile()
 
@@ -163,8 +164,8 @@ class AnalysisWorkflow:
                     analysis_id=analysis_id,
                     status=final_state.get("status"),
                     duration_seconds=duration,
-                    loop_count=final_state.get("loop_count", 0),
-                    approved=final_state.get("skeptic_approved", False),
+                    coordination_iterations=final_state.get("coordination_iteration", 0),
+                    follow_up_research_count=len(final_state.get("follow_up_research", [])),
                     viability_score=final_state.get("strategist_plan", {}).get("viability_score"),
                 )
 
