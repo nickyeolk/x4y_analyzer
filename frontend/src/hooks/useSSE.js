@@ -104,6 +104,11 @@ export function useSSE(url, body, shouldConnect = false) {
         while (true) {
           const { done, value } = await reader.read();
 
+          // IMPORTANT: Process the final chunk even when done=true
+          if (value && value.length > 0) {
+            buffer += decoder.decode(value, { stream: true });
+          }
+
           if (done) {
             // IMPORTANT: Process any remaining buffered data before breaking
             if (buffer.trim()) {
@@ -111,10 +116,10 @@ export function useSSE(url, body, shouldConnect = false) {
               const lines = buffer.split('\n');
               processLines(lines);
             }
+            console.log('[SSE] Stream done, final buffer processed');
             break;
           }
 
-          buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
           buffer = lines.pop() || '';
 
