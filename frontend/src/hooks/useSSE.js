@@ -55,10 +55,12 @@ export function useSSE(url, body, shouldConnect = false) {
         const decoder = new TextDecoder();
 
         let buffer = '';
+        // IMPORTANT: currentEvent must persist across processLines() calls
+        // because event: and data: lines may arrive in different chunks
+        let currentEvent = null;
 
         // Helper function to process lines
         const processLines = (lines) => {
-          let currentEvent = null;
 
           console.log(`[SSE] processLines called with ${lines.length} lines`);
 
