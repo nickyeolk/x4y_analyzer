@@ -87,7 +87,7 @@ async def stream_analysis_events(
         )
 
         # Send agent events (simulated for now)
-        agents = ["analyst", "researcher", "skeptic"]
+        agents = ["analyst", "researcher", "risk_analyst"]
         for agent in agents:
             yield {
                 "event": "agent_started",
@@ -189,8 +189,19 @@ async def stream_analysis_events(
                 })
             }
 
-        # Check if loop occurred
-        if result.get("loop_count", 0) > 0:
+        # Check if coordination iterations occurred
+        if result.get("coordination_iteration", 0) > 0:
+            yield {
+                "event": "coordination_follow_up",
+                "data": json.dumps({
+                    "iteration": result["coordination_iteration"],
+                    "follow_up_count": len(result.get("follow_up_research", [])),
+                    "query": "Follow-up research completed",
+                    "timestamp": datetime.utcnow().isoformat(),
+                })
+            }
+        # Legacy: Check if loop occurred (for backward compatibility)
+        elif result.get("loop_count", 0) > 0:
             yield {
                 "event": "loop_triggered",
                 "data": json.dumps({
@@ -226,7 +237,8 @@ async def stream_analysis_events(
                 "analysis_id": analysis_id,
                 "status": result.get("status"),
                 "viability_score": result.get("strategist_plan", {}).get("viability_score"),
-                "loop_count": result.get("loop_count", 0),
+                "coordination_iteration": result.get("coordination_iteration", 0),
+                "loop_count": result.get("loop_count", 0),  # Legacy support
                 "duration_seconds": result.get("metadata", {}).get("total_duration_seconds"),
                 "cost_usd": result.get("metadata", {}).get("cost_usd"),
                 "timestamp": datetime.utcnow().isoformat(),

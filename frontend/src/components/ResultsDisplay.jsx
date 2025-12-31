@@ -6,8 +6,9 @@ export function ResultsDisplay({ result }) {
   const {
     analyst_insights,
     researcher_findings,
-    skeptic_critique,
+    risk_analysis,
     strategist_plan,
+    skeptic_critique, // Legacy support
   } = result;
 
   return (
@@ -120,14 +121,113 @@ export function ResultsDisplay({ result }) {
         </div>
       )}
 
-      {/* Skeptic Critique */}
-      {skeptic_critique && (
+      {/* Risk Analysis */}
+      {risk_analysis && (
         <div className="card">
           <div className="card-header">
-            <h2>🤔 Critical Analysis</h2>
+            <h2>⚠️ Risk Analysis</h2>
           </div>
 
-          {skeptic_critique.concerns.length > 0 && (
+          {risk_analysis.summary && (
+            <div className="result-section">
+              <p style={{ color: 'var(--gray-900)', lineHeight: 1.6, marginBottom: '1rem' }}>
+                {risk_analysis.summary}
+              </p>
+              <div style={{ marginBottom: '1rem' }}>
+                <span
+                  className={`badge ${
+                    risk_analysis.overall_risk_level === 'low'
+                      ? 'badge-success'
+                      : risk_analysis.overall_risk_level === 'medium'
+                      ? 'badge-warning'
+                      : 'badge-error'
+                  }`}
+                >
+                  Risk Level: {risk_analysis.overall_risk_level.toUpperCase()}
+                </span>
+                <span className="badge badge-info" style={{ marginLeft: '0.5rem' }}>
+                  Confidence: {(risk_analysis.confidence * 100).toFixed(0)}%
+                </span>
+              </div>
+            </div>
+          )}
+
+          {risk_analysis.competitive_threats && risk_analysis.competitive_threats.length > 0 && (
+            <div className="result-section">
+              <h3>🎯 Competitive Threats</h3>
+              <ul className="result-list">
+                {risk_analysis.competitive_threats.map((threat, index) => (
+                  <li key={index}>{threat}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {risk_analysis.market_risks && risk_analysis.market_risks.length > 0 && (
+            <div className="result-section">
+              <h3>📉 Market Risks</h3>
+              <ul className="result-list">
+                {risk_analysis.market_risks.map((risk, index) => (
+                  <li key={index}>{risk}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {risk_analysis.execution_challenges && risk_analysis.execution_challenges.length > 0 && (
+            <div className="result-section">
+              <h3>⚙️ Execution Challenges</h3>
+              <ul className="result-list">
+                {risk_analysis.execution_challenges.map((challenge, index) => (
+                  <li key={index}>{challenge}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {risk_analysis.financial_risks && risk_analysis.financial_risks.length > 0 && (
+            <div className="result-section">
+              <h3>💰 Financial Risks</h3>
+              <ul className="result-list">
+                {risk_analysis.financial_risks.map((risk, index) => (
+                  <li key={index}>{risk}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {risk_analysis.fatal_flaws && risk_analysis.fatal_flaws.length > 0 && (
+            <div className="result-section">
+              <h3>🚫 Fatal Flaws</h3>
+              <div
+                style={{
+                  padding: '1rem',
+                  background: '#fee2e2',
+                  borderRadius: 'var(--border-radius)',
+                  marginTop: '0.5rem',
+                }}
+              >
+                <ul className="result-list">
+                  {risk_analysis.fatal_flaws.map((flaw, index) => (
+                    <li key={index} style={{ color: 'var(--error-color)' }}>
+                      {flaw}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Skeptic Critique (Legacy) */}
+      {!risk_analysis && skeptic_critique && (
+        <div className="card">
+          <div className="card-header">
+            <h2>🤔 Critical Analysis (Legacy)</h2>
+          </div>
+
+          {skeptic_critique.concerns && skeptic_critique.concerns.length > 0 && (
             <div className="result-section">
               <h3>Concerns</h3>
               <ul className="result-list">
@@ -138,7 +238,7 @@ export function ResultsDisplay({ result }) {
             </div>
           )}
 
-          {skeptic_critique.fatal_flaws.length > 0 && (
+          {skeptic_critique.fatal_flaws && skeptic_critique.fatal_flaws.length > 0 && (
             <div className="result-section">
               <h3>Critical Issues</h3>
               <div
@@ -160,7 +260,7 @@ export function ResultsDisplay({ result }) {
             </div>
           )}
 
-          {skeptic_critique.suggestions.length > 0 && (
+          {skeptic_critique.suggestions && skeptic_critique.suggestions.length > 0 && (
             <div className="result-section">
               <h3>Recommendations</h3>
               <ul className="result-list">
@@ -289,21 +389,34 @@ export function ResultsDisplay({ result }) {
               </div>
             </div>
 
-            <div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--gray-600)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Status
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>
-                <span className={`badge ${result.skeptic_approved ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '1rem' }}>
-                  {result.skeptic_approved ? '✓ Approved' : '⚠️ Needs Review'}
-                </span>
-              </div>
-            </div>
-
-            {result.loop_count > 0 && (
+            {strategist_plan && (
               <div>
                 <div style={{ fontSize: '0.875rem', color: 'var(--gray-600)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Quality Loops
+                  Viability Score
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                  <span className={`badge ${strategist_plan.viability_score >= 70 ? 'badge-success' : strategist_plan.viability_score >= 50 ? 'badge-warning' : 'badge-error'}`} style={{ fontSize: '1rem' }}>
+                    {strategist_plan.viability_score}%
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {result.coordination_iteration > 0 && (
+              <div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--gray-600)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Coordination Loops
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--gray-900)' }}>
+                  {result.coordination_iteration} iteration{result.coordination_iteration > 1 ? 's' : ''}
+                </div>
+              </div>
+            )}
+
+            {result.loop_count > 0 && !result.coordination_iteration && (
+              <div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--gray-600)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Quality Loops (Legacy)
                 </div>
                 <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--gray-900)' }}>
                   {result.loop_count} iteration{result.loop_count > 1 ? 's' : ''}
