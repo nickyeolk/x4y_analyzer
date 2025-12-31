@@ -60,11 +60,18 @@ export function useSSE(url, body, shouldConnect = false) {
         const processLines = (lines) => {
           let currentEvent = null;
 
-          for (const line of lines) {
+          console.log(`[SSE] processLines called with ${lines.length} lines`);
+
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            console.log(`[SSE] Line ${i}: "${line.substring(0, 50)}${line.length > 50 ? '...' : ''}"`);
+
             if (line.startsWith('event:')) {
               currentEvent = line.substring(6).trim();
+              console.log(`[SSE] Found event: ${currentEvent}`);
             } else if (line.startsWith('data:')) {
               const data = line.substring(5).trim();
+              console.log(`[SSE] Found data line, currentEvent: ${currentEvent}, data length: ${data.length}`);
 
               if (data && currentEvent) {
                 try {
@@ -97,9 +104,15 @@ export function useSSE(url, body, shouldConnect = false) {
                   console.error('[SSE] Error parsing SSE data:', e);
                   console.error('[SSE] Failed event:', currentEvent, 'data preview:', data.substring(0, 100));
                 }
+              } else {
+                console.log(`[SSE] Skipping data line - data: ${!!data}, currentEvent: ${currentEvent}`);
               }
 
               currentEvent = null;
+            } else if (line.trim() === '') {
+              console.log(`[SSE] Empty line (event separator)`);
+            } else {
+              console.log(`[SSE] Unrecognized line format: "${line.substring(0, 30)}"`);
             }
           }
         };
