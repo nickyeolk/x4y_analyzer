@@ -183,7 +183,19 @@ export function ResultsDisplay({ result }) {
               <h3>🎯 Competitive Threats</h3>
               <ul className="result-list">
                 {risk_analysis.competitive_threats.map((threat, index) => (
-                  <li key={index}>{threat}</li>
+                  <li key={index}>
+                    {typeof threat === 'string' ? threat : (
+                      <>
+                        <strong>{threat.threat || threat.description || 'Unknown threat'}</strong>
+                        {threat.severity && (
+                          <span className={`badge ${threat.severity === 'high' ? 'badge-error' : threat.severity === 'medium' ? 'badge-warning' : 'badge-info'}`} style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+                            {threat.severity.toUpperCase()}
+                          </span>
+                        )}
+                        {threat.mitigation && <div style={{ marginTop: '0.25rem', fontSize: '0.875rem', color: 'var(--gray-600)' }}>Mitigation: {threat.mitigation}</div>}
+                      </>
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -194,7 +206,19 @@ export function ResultsDisplay({ result }) {
               <h3>📉 Market Risks</h3>
               <ul className="result-list">
                 {risk_analysis.market_risks.map((risk, index) => (
-                  <li key={index}>{risk}</li>
+                  <li key={index}>
+                    {typeof risk === 'string' ? risk : (
+                      <>
+                        <strong>{risk.risk || risk.description || 'Unknown risk'}</strong>
+                        {risk.probability && (
+                          <span className={`badge ${risk.probability === 'high' ? 'badge-error' : risk.probability === 'medium' ? 'badge-warning' : 'badge-info'}`} style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+                            {risk.probability.toUpperCase()} probability
+                          </span>
+                        )}
+                        {risk.impact && <div style={{ marginTop: '0.25rem', fontSize: '0.875rem', color: 'var(--gray-600)' }}>Impact: {risk.impact}</div>}
+                      </>
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -205,7 +229,18 @@ export function ResultsDisplay({ result }) {
               <h3>⚙️ Execution Challenges</h3>
               <ul className="result-list">
                 {risk_analysis.execution_challenges.map((challenge, index) => (
-                  <li key={index}>{challenge}</li>
+                  <li key={index}>
+                    {typeof challenge === 'string' ? challenge : (
+                      <>
+                        <strong>{challenge.challenge || challenge.description || 'Unknown challenge'}</strong>
+                        {challenge.difficulty && (
+                          <span className={`badge ${challenge.difficulty === 'high' ? 'badge-error' : challenge.difficulty === 'medium' ? 'badge-warning' : 'badge-info'}`} style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+                            {challenge.difficulty.toUpperCase()} difficulty
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -216,7 +251,18 @@ export function ResultsDisplay({ result }) {
               <h3>💰 Financial Risks</h3>
               <ul className="result-list">
                 {risk_analysis.financial_risks.map((risk, index) => (
-                  <li key={index}>{risk}</li>
+                  <li key={index}>
+                    {typeof risk === 'string' ? risk : (
+                      <>
+                        <strong>{risk.risk || risk.description || 'Unknown risk'}</strong>
+                        {risk.concern_level && (
+                          <span className={`badge ${risk.concern_level === 'high' ? 'badge-error' : risk.concern_level === 'medium' ? 'badge-warning' : 'badge-info'}`} style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+                            {risk.concern_level.toUpperCase()} concern
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -369,7 +415,11 @@ export function ResultsDisplay({ result }) {
               <h3>Key Risks</h3>
               <ul className="result-list">
                 {strategist_plan.key_risks.map((risk, index) => (
-                  <li key={index}>{risk}</li>
+                  <li key={index}>
+                    {typeof risk === 'string' ? risk : (
+                      typeof risk === 'object' && risk !== null ? JSON.stringify(risk) : String(risk)
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
