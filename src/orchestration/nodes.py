@@ -269,3 +269,201 @@ async def parallel_analysis_node(state: Dict[str, Any]) -> Dict[str, Any]:
         )
 
         return state
+
+
+async def strategist_coordination_node(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Strategist coordination with dynamic research requests.
+
+    The Strategist reviews all research and decides whether to:
+    1. Request targeted follow-up research from specific agents
+    2. Proceed to synthesis and create the final GTM plan
+
+    Args:
+        state: Current workflow state
+
+    Returns:
+        Updated state with coordination decision
+    """
+    from src.agents.strategist_tools import STRATEGIST_COORDINATION_SYSTEM_PROMPT
+
+    iteration = state.get("coordination_iteration", 0)
+    max_iterations = state.get("max_coordination_iterations", 3)
+
+    logger.info(
+        "strategist_coordination_started",
+        iteration=iteration,
+        max_iterations=max_iterations,
+    )
+
+    # Force synthesis if max iterations reached
+    if iteration >= max_iterations:
+        logger.warning("strategist_max_iterations_reached", forcing_synthesis=True)
+        state["ready_for_synthesis"] = True
+        return state
+
+    with trace_span("node.strategist_coordination", {"iteration": iteration}):
+        business_idea = state["business_idea"]
+        analyst_insights = state.get("analyst_insights", {})
+        researcher_findings = state.get("researcher_findings", {})
+        risk_analysis = state.get("risk_analysis", {})
+
+        # Get follow-up research if it exists
+        follow_up_research = state.get("follow_up_research", [])
+
+        # Prepare context for Strategist
+        user_message = f"""Business Idea: {business_idea['full_idea']}
+
+CURRENT RESEARCH:
+
+Analyst Insights:
+{json.dumps(analyst_insights, indent=2)}
+
+Researcher Findings:
+{json.dumps(researcher_findings, indent=2)}
+
+Risk Analysis:
+{json.dumps(risk_analysis, indent=2)}"""
+
+        if follow_up_research:
+            user_message += f"""
+
+FOLLOW-UP RESEARCH (from previous iterations):
+{json.dumps(follow_up_research, indent=2)}"""
+
+        user_message += f"""
+
+Coordination Iteration: {iteration + 1} of {max_iterations}
+
+Review the research above and decide:
+
+**Option 1**: If you identify specific gaps that need deeper investigation, respond with:
+{{
+  "decision": "request_research",
+  "requests": [
+    {{"agent": "analyst", "query": "specific question"}},
+    {{"agent": "researcher", "query": "specific question"}},
+    {{"agent": "risk_analyst", "query": "specific question"}}
+  ],
+  "reasoning": "why this research is needed"
+}}
+
+**Option 2**: If you have sufficient information to create a comprehensive GTM plan, respond with:
+{{
+  "decision": "create_plan",
+  "reasoning": "why the current research is sufficient"
+}}
+
+Be thoughtful. Only request follow-up if genuinely needed.
+"""
+
+        strategist = get_strategist()
+        llm_response = await strategist.llm_client.generate(
+            system=STRATEGIST_COORDINATION_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_message}],
+            max_tokens=1000,
+            temperature=0.7,
+        )
+
+        # Parse response
+        try:
+            content = llm_response.content
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0]
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0]
+
+            decision = json.loads(content.strip())
+
+            logger.info(
+                "strategist_decision_parsed",
+                decision_type=decision.get("decision"),
+                reasoning=decision.get("reasoning", "")[:100],
+            )
+
+            if decision.get("decision") == "create_plan":
+                # Ready for synthesis
+                state["ready_for_synthesis"] = True
+                logger.info("strategist_ready_for_synthesis", reasoning=decision.get("reasoning"))
+            else:
+                # Request follow-up research
+                requests = decision.get("requests", [])
+                if requests:
+                    logger.info("strategist_requesting_follow_up", num_requests=len(requests))
+
+                    # Execute follow-up research
+                    analyst = get_analyst()
+                    researcher = get_researcher()
+                    risk_analyst = get_risk_analyst()
+
+                    for request in requests:
+                        agent_name = request.get("agent")
+                        query = request.get("query")
+
+                        if not query:
+                            continue
+
+                        logger.info("strategist_executing_follow_up", agent=agent_name, query=query[:100])
+
+                        try:
+                            if agent_name == "analyst":
+                                result = await analyst.execute_focused(state, query)
+                            elif agent_name == "researcher":
+                                result = await researcher.execute_focused(state, query)
+                            elif agent_name == "risk_analyst":
+                                result = await risk_analyst.execute_focused(state, query)
+                            else:
+                                logger.warning("strategist_unknown_agent", agent=agent_name)
+                                continue
+
+                            # Append to follow-up research
+                            if "follow_up_research" not in state:
+                                state["follow_up_research"] = []
+                            state["follow_up_research"].append(result)
+
+                            logger.info("strategist_follow_up_completed", agent=agent_name)
+
+                        except Exception as e:
+                            logger.error("strategist_follow_up_failed", agent=agent_name, error=str(e))
+
+                    # Increment iteration
+                    state["coordination_iteration"] = iteration + 1
+                else:
+                    # No requests, proceed to synthesis
+                    state["ready_for_synthesis"] = True
+
+        except json.JSONDecodeError as e:
+            logger.error("strategist_coordination_parse_error", error=str(e), response=llm_response.content[:300])
+            # Fallback: proceed to synthesis
+            state["ready_for_synthesis"] = True
+
+        return state
+
+
+async def strategist_synthesis_node(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Strategist synthesis - creates final GTM plan from all research.
+
+    This is the final node that synthesizes all insights into a comprehensive
+    go-to-market strategy.
+
+    Args:
+        state: Current workflow state
+
+    Returns:
+        Updated state with final GTM plan
+    """
+    logger.info("strategist_synthesis_started")
+
+    with trace_span("node.strategist_synthesis"):
+        # Use the existing strategist node's logic
+        strategist = get_strategist()
+        state = await strategist.execute(state)
+
+        logger.info(
+            "strategist_synthesis_completed",
+            has_plan=state.get("strategist_plan") is not None,
+            viability_score=state.get("strategist_plan", {}).get("viability_score"),
+        )
+
+        return state
