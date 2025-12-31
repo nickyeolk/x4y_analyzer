@@ -3,6 +3,7 @@ import { AnalysisForm } from './components/AnalysisForm';
 import { ProgressDisplay } from './components/ProgressDisplay';
 import { MetricsDashboard } from './components/MetricsDashboard';
 import { ResultsDisplay } from './components/ResultsDisplay';
+import { DebugPanel } from './components/DebugPanel';
 import { useSSE } from './hooks/useSSE';
 import './styles/index.css';
 
@@ -131,6 +132,14 @@ function App() {
       <footer style={{ textAlign: 'center', marginTop: '3rem', paddingBottom: '2rem', color: 'var(--gray-600)', fontSize: '0.875rem' }}>
         <p>Powered by GPT-4o via OpenRouter | Real-time SSE Streaming</p>
       </footer>
+
+      {/* Debug Panel - always available for troubleshooting */}
+      <DebugPanel
+        result={result}
+        events={events}
+        isConnected={isConnected}
+        error={error}
+      />
     </div>
   );
 }
