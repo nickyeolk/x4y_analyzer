@@ -42,23 +42,27 @@ class StrategistAgent(BaseAgent):
         Returns:
             Updated state with GTM plan
         """
-        business_idea = state["business_idea"]
-        analyst_insights = state.get("analyst_insights", {})
-        researcher_findings = state.get("researcher_findings", {})
-        skeptic_critique = state.get("skeptic_critique", {})
+        business_idea = state.get("business_idea") or {}
+        analyst_insights = state.get("analyst_insights") or {}
+        researcher_findings = state.get("researcher_findings") or {}
+        risk_analysis = state.get("risk_analysis") or {}
+        skeptic_critique = state.get("skeptic_critique") or {}  # Legacy support
         iteration = state.get("loop_count", 0)
+
+        full_idea = business_idea.get("full_idea", "Unknown business idea")
 
         logger.info(
             "strategist_started",
-            idea=business_idea["full_idea"],
+            idea=full_idea,
             iteration=iteration,
         )
 
         # Step 1: Synthesize all insights
+        description = business_idea.get('description', '')
         user_message = f"""Create a comprehensive GTM strategy for this business idea:
 
-Business Idea: {business_idea['full_idea']}
-{f"Description: {business_idea.get('description')}" if business_idea.get('description') else ""}
+Business Idea: {full_idea}
+{f"Description: {description}" if description else ""}
 
 BRAND DNA (from Analyst):
 {json.dumps(analyst_insights, indent=2)}
@@ -66,8 +70,8 @@ BRAND DNA (from Analyst):
 MARKET RESEARCH (from Researcher):
 {json.dumps(researcher_findings, indent=2)}
 
-SKEPTIC'S FEEDBACK:
-{json.dumps(skeptic_critique, indent=2)}
+RISK ANALYSIS (from Risk Analyst):
+{json.dumps(risk_analysis, indent=2)}
 
 INSTRUCTIONS:
 Create an actionable, realistic GTM plan that:
@@ -85,7 +89,8 @@ Create an actionable, realistic GTM plan that:
 Consider:
 - Market saturation level: {researcher_findings.get('saturation_level', 'unknown')}
 - Competitor count: {researcher_findings.get('competitor_count', 0)}
-- Skeptic concerns: {', '.join(skeptic_critique.get('concerns', [])[:3])}
+- Risk level: {risk_analysis.get('overall_risk_level', 'unknown')}
+- Key risks: {', '.join(risk_analysis.get('competitive_threats', [])[:2])}
 
 Viability Score Guidelines:
 - 80-100%: Highly viable (low competition, clear differentiation, strong demand)
