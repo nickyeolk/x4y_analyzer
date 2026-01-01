@@ -1,412 +1,873 @@
-# Startup Analyzer - "X for Y" Marketing Stress Tester
+# 🚀 Startup Analyzer - "X for Y" AI Multi-Agent System
 
-A multi-agent system with comprehensive observability that analyzes "X for Y" business ideas (e.g., "Uber for Dog Walkers") through intelligent orchestration and real-time transparency.
+**An intelligent multi-agent system that analyzes "X for Y" business ideas with comprehensive observability.**
 
-## Features
+Powered by GPT-4o via OpenRouter, this system uses 4 specialized AI agents orchestrated through LangGraph to provide deep, coordinated analysis of startup ideas like "Uber for Dog Walkers" or "Airbnb for Office Spaces."
 
-- 🤖 **Multi-Agent Analysis**: Analyst, Researcher, Skeptic, and Strategist agents work together
-- 🔄 **Cyclic Workflows**: Skeptic can trigger feedback loops for deeper analysis
-- 📊 **Real-Time Observability**: Live traces, structured logs, and metrics dashboard
-- 🔍 **AI-Powered Research**: Tavily search + RAG over marketing frameworks
-- 💡 **GTM Strategy Generation**: Actionable go-to-market plans with LinkedIn hooks
-- 🎯 **LangSmith Integration**: Visual trace exploration for stakeholders
+**Live Demo**: [https://x4y.wildnode.io](https://x4y.wildnode.io)
 
-## Architecture
+---
+
+## 🎯 What It Does
+
+Input a business idea in the format "**X for Y**" (e.g., "Uber for Dog Walkers") and get:
+
+- **Brand DNA Analysis** - What makes the X brand successful?
+- **Market Research** - How saturated is the Y market?
+- **Risk Assessment** - What could go wrong?
+- **GTM Strategy** - How should you launch this?
+- **Viability Score** - Is this idea worth pursuing? (0-100%)
+
+All with **real-time observability** showing exactly how agents think, coordinate, and make decisions.
+
+---
+
+## ✨ Key Features
+
+### 🤖 Multi-Agent Intelligence
+- **4 Specialized Agents** working in parallel with dynamic coordination
+- **Intelligent research loops** - agents request follow-up research when gaps are identified
+- **Context-aware analysis** - each agent adapts based on business model type
+
+### ⚡ Performance Optimized
+- **Parallel execution** - 3 agents run concurrently (saves 15-20s)
+- **Fast classification** - GPT-4o-mini for simple tasks (saves 2-3s)
+- **Dynamic coordination** - only loop when necessary
+
+### 📊 Production-Grade Observability
+- **LangSmith tracing** - Visual exploration of every LLM call
+- **Structured logging** - JSON logs with correlation IDs
+- **Token & cost tracking** - Per-agent usage and aggregated costs
+- **Real-time SSE streaming** - Live updates in the frontend
+- **Debug panel** - On-screen console for tablet/mobile debugging
+
+### 🎨 Modern Frontend
+- **React + Vite** - Fast, responsive UI
+- **Real-time progress** - SSE streaming with agent status updates
+- **Rich results display** - Expandable sections with severity badges
+- **Error boundaries** - Graceful error handling
+- **Mobile-friendly** - Debug panel accessible on tablets
+
+---
+
+## 🤖 The Multi-Agent System
+
+### Architecture Overview
 
 ```
-User Input ("Uber for Dog Walkers")
+User Input: "Uber for Dog Walkers"
          ↓
-    [Analyst] → Analyzes Uber's DNA
-         ↓
-   [Researcher] → Investigates dog walking market
-         ↓
-    [Skeptic] → Critiques idea
-         ↓     ↖ (loops back if weak)
-  [Strategist] → Final GTM plan
+┌─────────────────────────────────────────┐
+│    PHASE 1: Parallel Analysis (⚡15s)   │
+├─────────────────────────────────────────┤
+│  ┌─────────┐  ┌──────────┐  ┌────────┐ │
+│  │ Analyst │  │Researcher│  │  Risk  │ │
+│  │         │  │          │  │Analyst │ │
+│  └─────────┘  └──────────┘  └────────┘ │
+│      ↓             ↓             ↓      │
+└──────┬─────────────┬─────────────┬──────┘
+       └─────────────┴─────────────┘
+                     ↓
+┌─────────────────────────────────────────┐
+│   PHASE 2: Strategist Coordination      │
+├─────────────────────────────────────────┤
+│  • Reviews all agent outputs            │
+│  • Identifies knowledge gaps            │
+│  • Requests targeted follow-up research │
+│    OR proceeds to final synthesis       │
+└─────────────────────────────────────────┘
+         ↓ (loop if needed)     ↓ (ready)
+         ←───────────────────────┘
+                     ↓
+┌─────────────────────────────────────────┐
+│      PHASE 3: Final Synthesis           │
+├─────────────────────────────────────────┤
+│  Strategist creates comprehensive       │
+│  GTM plan with viability score          │
+└─────────────────────────────────────────┘
 ```
 
-## Quick Start
+---
 
-### 1. Installation
+### 1. 🔍 Analyst Agent (Brand DNA Specialist)
+
+**Role**: Deconstructs the "X" brand to extract core strengths
+
+**Capabilities**:
+- Extracts brand DNA: core strengths, business model, differentiators
+- Identifies success factors and competitive advantages
+- Adapts research focus based on coordination feedback
+- Provides confidence score for analysis
+
+**Tools**:
+- **Tavily Search** - AI-optimized web search
+  - Basic mode: 5 results
+  - Focused mode: 7 results with advanced depth
+
+**Example Output**:
+```json
+{
+  "core_strengths": [
+    "On-demand marketplace platform",
+    "Real-time GPS tracking",
+    "Dynamic pricing algorithm",
+    "Trust & safety systems"
+  ],
+  "business_model": "Two-sided marketplace connecting riders with drivers...",
+  "key_differentiators": [
+    "First-mover advantage in ridesharing",
+    "Network effects and scale",
+    "Superior user experience"
+  ],
+  "confidence": 0.87
+}
+```
+
+---
+
+### 2. 📊 Researcher Agent (Market Intelligence)
+
+**Role**: Investigates the "Y" market for competition and opportunity
+
+**Capabilities**:
+- Assesses market saturation (low/medium/high)
+- Identifies competitors and counts them
+- Discovers market opportunities and barriers
+- **Parallel search optimization** - runs 2 searches concurrently
+
+**Tools**:
+- **Tavily Search** (2 parallel queries)
+  - Market search: size, trends, landscape
+  - Competitor search: companies, apps, services
+
+**Example Output**:
+```json
+{
+  "market_name": "Dog Walking Services",
+  "market_size": "$1.2B annually in US",
+  "saturation_level": "high",
+  "competitors": ["Rover", "Wag", "PetBacker", "Care.com"],
+  "competitor_count": 15,
+  "opportunities": [
+    "Premium certified trainer segment underserved",
+    "Corporate dog walking programs"
+  ],
+  "barriers": [
+    "Trust and insurance requirements",
+    "Local regulations and licensing",
+    "Established incumbents with network effects"
+  ]
+}
+```
+
+---
+
+### 3. ⚠️ Risk Analyst Agent (Critical Thinker)
+
+**Role**: Identifies threats, risks, and potential failure modes
+
+**Capabilities**:
+- **Business model classification** - Categorizes idea (marketplace, SaaS, ecommerce, etc.)
+- **Context-aware RAG lookup** - Queries relevant risk frameworks
+- Analyzes competitive threats, market risks, execution challenges
+- Identifies financial risks and fatal flaws
+- Provides realistic overall risk assessment
+
+**Tools**:
+- **GPT-4o-mini classifier** - Fast business model categorization (saves 2-3s)
+- **Marketing RAG** - Semantic search over frameworks
+  - FAISS vector store with curated knowledge base
+  - Context-aware queries per model type
+  - Examples: "marketplace cold start", "SaaS churn risks"
+
+**Example Output**:
+```json
+{
+  "competitive_threats": [
+    {
+      "threat": "Rover controls 70% market share with 2M users",
+      "severity": "high",
+      "mitigation": "Target premium segment Rover underserves"
+    }
+  ],
+  "market_risks": [
+    {
+      "risk": "Highly saturated market with low switching costs",
+      "probability": "high",
+      "impact": "Difficult customer acquisition and retention"
+    }
+  ],
+  "execution_challenges": [
+    {
+      "challenge": "Building walker supply in new cities",
+      "difficulty": "high"
+    }
+  ],
+  "financial_risks": [
+    {
+      "risk": "High customer acquisition costs ($50-100)",
+      "concern_level": "high"
+    }
+  ],
+  "fatal_flaws": [
+    "No clear differentiation from incumbents"
+  ],
+  "overall_risk_level": "high",
+  "summary": "Market highly saturated with strong incumbents...",
+  "confidence": 0.82
+}
+```
+
+---
+
+### 4. 🎯 Strategist Agent (GTM Expert)
+
+**Role**: Synthesizes all insights into actionable go-to-market strategy
+
+**Capabilities**:
+- **Coordination mode** - Reviews research, identifies gaps, requests follow-up
+- **Synthesis mode** - Creates comprehensive GTM plan
+- Assigns viability score (0-100%)
+- Provides realistic, risk-aware strategy
+
+**Coordination Loop Logic**:
+```python
+if knowledge_gaps_exist:
+    request_targeted_research()  # Loop back (max 3 iterations)
+else:
+    create_final_gtm_plan()
+```
+
+**Example Output**:
+```json
+{
+  "target_audience": "Affluent urban professionals with high-value dogs",
+  "value_proposition": "Certified trainers, not just walkers",
+  "pricing_strategy": "Premium tier at $50/walk vs $25 industry average",
+  "distribution_channels": [
+    "Instagram influencer partnerships",
+    "Veterinary clinic referrals",
+    "Premium pet boutique partnerships"
+  ],
+  "marketing_hooks": [
+    "Your dog deserves a trainer, not just a walker",
+    "Rover gets you a walk. We get you better behavior.",
+    "Premium dogs deserve premium care"
+  ],
+  "competitive_advantages": [
+    "Walker certification program",
+    "Behavioral training focus",
+    "Premium service positioning"
+  ],
+  "key_risks": [
+    "Higher CAC due to premium positioning",
+    "Limited addressable market"
+  ],
+  "success_metrics": [
+    "Customer LTV > $2000",
+    "Net Promoter Score > 70",
+    "Walker retention > 80%"
+  ],
+  "timeline": "6-month pilot in SF, 12-month expansion to 5 cities",
+  "viability_score": 68
+}
+```
+
+**Viability Score Guidelines**:
+- **80-100%**: Highly viable (low competition, clear differentiation)
+- **60-79%**: Viable (moderate competition, good fit)
+- **40-59%**: Moderate (high competition OR uncertain demand)
+- **0-39%**: Low viability (fatal flaws, saturated market)
+
+---
+
+## 🛠️ Tools & Integrations
+
+### Tavily Search
+- **AI-optimized web search** designed for LLM consumption
+- Returns high-quality, relevant content snippets
+- Supports basic/advanced search depth
+- Used by: Analyst, Researcher
+- **Optimization**: Parallel searches save 5-8s
+
+### Marketing RAG (Retrieval Augmented Generation)
+- **Semantic search** over curated marketing knowledge base
+- FAISS vector store with OpenAI embeddings
+- Context-aware queries based on business model
+- Contains: startup failure patterns, pitfalls, frameworks
+- Used by: Risk Analyst
+
+### LLM Providers
+- **Primary**: GPT-4o via OpenRouter (all agents)
+- **Classification**: GPT-4o-mini for fast categorization
+- Automatic LangSmith tracing
+- Temperature: 0.7 (balanced creativity/consistency)
+
+---
+
+## 📊 Comprehensive Observability
+
+### 1. LangSmith Tracing
+
+**Visual trace exploration** of every LLM call:
+
+- **Hierarchical traces** - See parent workflow → agent calls → tool executions
+- **Token tracking** - Input/output tokens per call
+- **Latency metrics** - Duration of each operation
+- **Error tracking** - Failed calls with stack traces
+- **Prompt inspection** - View exact prompts and responses
+
+**Access**: Set `LANGSMITH_API_KEY` and view traces at [smith.langchain.com](https://smith.langchain.com)
+
+### 2. Structured Logging
+
+**JSON logs with rich context**:
+
+```json
+{
+  "timestamp": "2024-01-02T10:30:45.123Z",
+  "level": "INFO",
+  "event": "analyst_completed",
+  "correlation_id": "CID-abc123",
+  "analysis_id": "AID-xyz789",
+  "brand": "Uber",
+  "confidence": 0.87,
+  "iteration": 0,
+  "duration_ms": 3456
+}
+```
+
+**Log Events Tracked**:
+- `workflow_started` / `workflow_completed`
+- `agent_started` / `agent_completed`
+- `tool_called` / `tool_completed`
+- `llm_request_started` / `llm_request_completed`
+- `coordination_decision` / `synthesis_started`
+- `error_occurred`
+
+**Query logs**:
+```bash
+# Filter by agent
+grep "analyst_completed" logs/app.log
+
+# Filter by correlation ID
+grep "CID-abc123" logs/app.log
+
+# Track a specific analysis
+grep "AID-xyz789" logs/app.log
+```
+
+### 3. Token & Cost Tracking
+
+**Per-agent token usage**:
+
+```python
+{
+  "metadata": {
+    "token_usage": {
+      "analyst": {
+        "prompt_tokens": 1234,
+        "completion_tokens": 567,
+        "total_tokens": 1801
+      },
+      "researcher": {
+        "prompt_tokens": 1456,
+        "completion_tokens": 678,
+        "total_tokens": 2134
+      },
+      "risk_analyst": {
+        "classification_prompt_tokens": 45,
+        "classification_completion_tokens": 12,
+        "analysis_prompt_tokens": 1567,
+        "analysis_completion_tokens": 789,
+        "total_tokens": 2413
+      },
+      "strategist": {
+        "prompt_tokens": 2345,
+        "completion_tokens": 1234,
+        "total_tokens": 3579
+      }
+    },
+    "cost_usd": 0.0494
+  }
+}
+```
+
+**Cost Calculation**:
+- Input: `total_prompt_tokens / 1_000_000 * $2.50`
+- Output: `total_completion_tokens / 1_000_000 * $10.00`
+- **GPT-4o pricing**: $2.50/MTok input, $10.00/MTok output
+
+**Typical Analysis Cost**: $0.04 - $0.08
+
+### 4. Real-Time SSE Streaming
+
+**Server-Sent Events** provide live updates to the frontend:
+
+```
+event: agent_started
+data: {"agent": "analyst", "status": "running"}
+
+event: tool_called
+data: {"tool": "tavily_search", "query": "Uber business model"}
+
+event: agent_progress
+data: {"agent": "analyst", "message": "Analyzing brand DNA..."}
+
+event: agent_completed
+data: {"agent": "analyst", "confidence": 0.87}
+
+event: coordination_decision
+data: {"action": "request_followup", "reason": "Need pricing data"}
+
+event: analysis_completed
+data: {"viability_score": 68, "total_duration": 48.3}
+```
+
+### 5. Frontend Debug Panel
+
+**On-screen debugging** for tablets and mobile:
+
+- **Console interceptor** - Captures all console.log/error/warn
+- **Result inspector** - View raw JSON responses
+- **SSE event log** - Track all server events
+- **Connection status** - Monitor SSE connection
+- **Error boundary** - Catch and display React crashes
+
+**Access**: Click "🐛 Debug Panel" button (bottom-right)
+
+### 6. Metrics Dashboard
+
+**Key metrics tracked**:
+
+- `analysis_duration_seconds` - Total analysis time
+- `coordination_iterations` - Number of research loops
+- `tool_call_count` - Tavily and RAG usage
+- `llm_tokens_total` - Token consumption
+- `llm_cost_usd` - Estimated API costs
+- `viability_score_distribution` - Score histogram
+- `agent_completion_rate` - Success rate per agent
+
+**Frontend displays**:
+- Duration with breakdown (minutes/seconds)
+- Cost in USD with 4 decimal precision
+- Token usage with K/M suffixes
+- Token breakdown (input/output/total)
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 18+ (for frontend)
+- OpenRouter API key
+- Tavily API key
+- (Optional) LangSmith API key
+
+### 1. Clone & Install
 
 ```bash
-# Clone and install
-git clone <repo>
-cd startup_analyzer
+git clone https://github.com/yourusername/startup-analyzer.git
+cd startup-analyzer
+
+# Backend
 pip install -r requirements.txt
+
+# Frontend
+cd frontend
+npm install
+cd ..
 ```
 
-### 2. Environment Configuration
+### 2. Configure Environment
 
 Create `.env` file:
 
 ```bash
-# Required: LLM Provider (OpenRouter)
-OPENROUTER_API_KEY=your_key_here
+# Required: LLM Provider
+OPENROUTER_API_KEY=your_openrouter_key
 LLM_MODEL=openai/gpt-4o
 
-# Required: Search Tool
-TAVILY_API_KEY=your_key_here
+# Required: Search
+TAVILY_API_KEY=your_tavily_key
 
-# Optional: LangSmith Tracing
-LANGSMITH_API_KEY=your_key_here
+# Optional: Observability
+LANGSMITH_API_KEY=your_langsmith_key
 LANGSMITH_PROJECT=startup-analyzer
 LANGCHAIN_TRACING_V2=true
 
-# Observability
-OTEL_ENABLED=true
-OTEL_EXPORTER=console
+# Settings
 LOG_LEVEL=INFO
 APP_ENV=development
 ```
 
-### 3. RAG Knowledge Base Setup
-
-**IMPORTANT: Where to Place Marketing Documents**
-
-The RAG (Retrieval Augmented Generation) system needs marketing framework documents to provide intelligent insights.
-
-#### Step 1: Create Directory Structure
+### 3. Build RAG Knowledge Base
 
 ```bash
-mkdir -p data/knowledge_base
-mkdir -p data/vector_store
-```
+# Create directories
+mkdir -p data/knowledge_base data/vector_store
 
-#### Step 2: Add Your Documents
+# Add your marketing documents (.txt files) to data/knowledge_base/
 
-Place marketing framework documents (`.txt` files) in `data/knowledge_base/`. Examples:
-
-**Recommended Documents:**
-
-1. **`data/knowledge_base/marketing_pitfalls.txt`**
-   - Common startup marketing mistakes
-   - Red flags for saturated markets
-   - Warning signs for bad business ideas
-
-2. **`data/knowledge_base/gtm_frameworks.txt`**
-   - Go-to-market strategy templates
-   - Pricing strategy frameworks
-   - Distribution channel playbooks
-
-3. **`data/knowledge_base/competitive_analysis.txt`**
-   - SWOT analysis frameworks
-   - Competitive positioning strategies
-   - Market entry tactics
-
-4. **`data/knowledge_base/linkedin_marketing.txt`**
-   - Viral post formulas
-   - Hook writing techniques
-   - B2B marketing strategies
-
-**Example Document Format:**
-
-```
-File: data/knowledge_base/marketing_pitfalls.txt
-
-Title: Common Marketing Pitfalls for Startups
-
-1. TARGETING TOO BROAD
-Many startups fail by trying to appeal to everyone. The "Uber for X" model
-only works if X has specific pain points that generic solutions don't address.
-
-Example: "Uber for grocery delivery" succeeded (Instacart) because grocery
-shopping is time-consuming and people value convenience. But "Uber for mail
-delivery" failed because USPS already offers cheap, reliable service.
-
-2. IGNORING MARKET SATURATION
-Entering an oversaturated market without clear differentiation is a death sentence.
-
-Red flags:
-- More than 5 well-funded competitors
-- Market leader has >40% market share
-- Low barriers to entry
-
-3. UNDERESTIMATING CAC (Customer Acquisition Cost)
-...
-
-[Continue with more pitfalls]
-```
-
-#### Step 3: Build Vector Store
-
-Once documents are in place, build the searchable index:
-
-```bash
+# Build vector store
 python scripts/build_vector_store.py
 ```
 
-**Expected Output:**
+**Expected output**:
 ```
-Building vector store from marketing knowledge base...
-Loading documents from: data/knowledge_base
-Loaded 4 documents
-Splitting documents into chunks...
-Created 48 chunks
-Creating FAISS vector store...
-Saving vector store to: data/vector_store
 ✅ Vector store built successfully!
    - Documents: 4
    - Chunks: 48
    - Location: data/vector_store
 ```
 
-**Troubleshooting:**
-- If "No documents found", ensure `.txt` files are in `data/knowledge_base/`
-- If embedding fails, check `OPENROUTER_API_KEY` is set correctly
-- Vector store will be saved in `data/vector_store/` and loaded automatically
-
-#### Step 4: Verify RAG Setup
-
-Test the RAG tool:
-
-```python
-from src.tools.marketing_rag import get_rag_tool
-from src.tools.base import ToolInput
-
-rag = get_rag_tool()
-result = await rag.execute(ToolInput(
-    tool_name="rag",
-    parameters={
-        "query": "What are common pitfalls for marketplace startups?",
-        "k": 3
-    }
-))
-
-print(result.result["documents"])
-```
-
-### 4. Run the Application
+### 4. Start Backend
 
 ```bash
-# Start the API server
+# Development
 python -m src.api.main
 
-# Or use uvicorn directly
-uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+# Production
+uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 ```
 
-### 5. Analyze a Startup Idea
+**API available at**: http://localhost:8000
+
+### 5. Start Frontend
 
 ```bash
-curl -X POST http://localhost:8000/analyze \
+cd frontend
+npm run dev
+```
+
+**Frontend available at**: http://localhost:5173
+
+### 6. Analyze Your First Idea
+
+**Via UI**: Open http://localhost:5173 and enter:
+- X Brand: `Uber`
+- Y Market: `Dog Walkers`
+
+**Via API**:
+```bash
+curl -X POST http://localhost:8000/api/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "x_brand": "Uber",
-    "y_market": "Dog Walkers"
+    "y_market": "Dog Walkers",
+    "description": "On-demand certified dog trainers"
   }'
 ```
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```
-startup_analyzer/
-├── config/                    # Configuration & settings
+startup-analyzer/
+├── frontend/                 # React + Vite UI
+│   ├── src/
+│   │   ├── components/      # UI components
+│   │   │   ├── AnalysisForm.jsx
+│   │   │   ├── ProgressDisplay.jsx
+│   │   │   ├── MetricsDashboard.jsx
+│   │   │   ├── ResultsDisplay.jsx
+│   │   │   ├── DebugPanel.jsx
+│   │   │   └── ErrorBoundary.jsx
+│   │   ├── hooks/
+│   │   │   └── useSSE.js    # SSE streaming hook
+│   │   └── styles/
+│   └── package.json
+│
 ├── src/
-│   ├── agents/               # 4 specialized agents
+│   ├── agents/              # Multi-agent system
 │   │   ├── analyst.py       # Brand DNA analysis
 │   │   ├── researcher.py    # Market research
-│   │   ├── skeptic.py       # Critical evaluation
+│   │   ├── risk_analyst.py  # Risk assessment
 │   │   ├── strategist.py    # GTM strategy
+│   │   ├── base.py          # Base agent class
 │   │   └── prompts/         # System prompts
-│   ├── orchestration/        # LangGraph workflow
-│   │   ├── state.py         # State management
-│   │   └── graph.py         # DCG with loops
+│   │
+│   ├── orchestration/       # LangGraph workflow
+│   │   ├── graph.py         # Workflow definition
+│   │   ├── nodes.py         # Node implementations
+│   │   ├── edges.py         # Routing logic
+│   │   └── state.py         # State management
+│   │
 │   ├── tools/               # External integrations
-│   │   ├── tavily.py        # Web search
-│   │   └── marketing_rag.py # Knowledge base
-│   ├── llm/                 # OpenRouter client
-│   ├── observability/       # Tracing, logs, metrics
-│   └── api/                 # FastAPI routes
+│   │   ├── tavily.py        # Web search tool
+│   │   ├── marketing_rag.py # RAG knowledge base
+│   │   ├── base.py          # Base tool class
+│   │   └── registry.py      # Tool registry
+│   │
+│   ├── llm/                 # LLM client
+│   │   ├── openrouter_client.py
+│   │   └── token_counter.py
+│   │
+│   ├── observability/       # Full observability stack
+│   │   ├── logger.py        # Structured JSON logging
+│   │   ├── tracer.py        # OpenTelemetry tracing
+│   │   ├── metrics.py       # Prometheus metrics
+│   │   └── decorators.py    # @trace_agent, @trace_tool
+│   │
+│   ├── api/                 # FastAPI backend
+│   │   ├── main.py          # Application entry
+│   │   ├── routes/          # API endpoints
+│   │   │   └── analysis.py  # /analyze, /analyze/stream
+│   │   └── models/          # Pydantic models
+│   │
+│   └── utils/               # Utilities
+│       └── errors.py        # Custom exceptions
+│
 ├── data/
-│   ├── knowledge_base/      # 📄 PUT YOUR .TXT FILES HERE
-│   └── vector_store/        # Auto-generated FAISS index
+│   ├── knowledge_base/      # 📄 Marketing documents (.txt)
+│   └── vector_store/        # FAISS index (auto-generated)
+│
+├── config/
+│   └── settings.py          # Environment configuration
+│
 ├── scripts/
 │   └── build_vector_store.py
-└── frontend/                # React app (if building UI)
+│
+├── tests/
+│   ├── agents/
+│   ├── tools/
+│   └── evaluation/
+│
+├── .env                     # Environment variables
+├── requirements.txt         # Python dependencies
+└── README.md               # This file
 ```
 
-## Observability Dashboard
+---
 
-### View Real-Time Traces
+## 🔧 API Reference
 
-```bash
-# Console output
-OTEL_EXPORTER=console python -m src.api.main
+### POST /api/analyze
 
-# Jaeger (requires Docker)
-docker run -d -p 16686:16686 -p 14268:14268 jaegertracing/all-in-one:latest
-# Set OTEL_EXPORTER=jaeger in .env
-# Visit http://localhost:16686
-```
-
-### View Prometheus Metrics
-
-```bash
-curl http://localhost:8000/metrics
-```
-
-**Key Metrics:**
-- `analysis_duration_seconds` - Total analysis time
-- `analysis_loop_count` - Number of skeptic loops
-- `tool_call_count` - Tavily and RAG usage
-- `llm_tokens_used` - Token consumption
-- `llm_api_cost_dollars` - Estimated API costs
-
-### View Structured Logs
-
-```bash
-# Filter by agent
-tail -f logs/app.log | grep "analyst_completed"
-
-# Filter by correlation ID
-tail -f logs/app.log | grep "CID-abc123"
-```
-
-## Example Analysis Flow
-
-```
-Input: "Uber for Dog Walkers"
-
-[Analyst] Searching: "Uber business model key features"
-[Analyst] ✓ Brand DNA: On-demand marketplace, two-sided platform,
-          dynamic pricing, real-time GPS, trust & safety systems
-          Confidence: 0.87
-
-[Researcher] Searching: "dog walking market size competitors"
-[Researcher] ✓ Market: $1.2B, 15+ competitors (Rover, Wag, etc.),
-             HIGH saturation, barriers: trust, insurance, local regulation
-
-[Skeptic] 🔍 Reviewing analysis...
-[Skeptic] ⚠️ CONCERNS: Market already saturated, Rover has 70% share,
-          unit economics unclear, no clear differentiation
-[Skeptic] ❌ REJECTED - Loop back reason: "Need deeper competitive analysis"
-
-[Analyst] (Iteration 2) Deeper research on Rover and Wag...
-[Analyst] ✓ Updated insights: Rover succeeded via trust (reviews + insurance)
-
-[Researcher] (Iteration 2) Analyzing gaps in existing solutions...
-[Researcher] ✓ OPPORTUNITY: Premium service tier (certified trainers)
-
-[Skeptic] ✅ APPROVED - Proceed to strategy
-
-[Strategist] 📋 GTM Plan:
-- Target: Affluent urban professionals with high-value dogs
-- Value Prop: "Certified dog trainers, not just walkers"
-- Pricing: Premium ($50/walk vs $25 industry avg)
-- Channels: Instagram, vet partnerships, pet boutiques
-- Marketing Hooks:
-  1. "Your dog deserves a trainer, not just a walker"
-  2. "Rover gets you a walk. We get you better behavior."
-  3. "Premium dogs deserve premium care"
-- Viability: 0.68 (medium - requires strong execution)
-```
-
-## API Reference
-
-### POST /analyze
-
-Start a new analysis:
+**Synchronous analysis** (waits for completion):
 
 ```json
+POST /api/analyze
+Content-Type: application/json
+
 {
   "x_brand": "Uber",
   "y_market": "Dog Walkers",
-  "description": "Optional additional context"
+  "description": "Optional context"
 }
 ```
 
-**Response (SSE Stream):**
+**Response**:
+```json
+{
+  "analysis_id": "AID-abc123",
+  "business_idea": {
+    "full_idea": "Uber for Dog Walkers",
+    "x_brand": "Uber",
+    "y_market": "Dog Walkers"
+  },
+  "analyst_insights": { ... },
+  "researcher_findings": { ... },
+  "risk_analysis": { ... },
+  "strategist_plan": {
+    "viability_score": 68,
+    ...
+  },
+  "metadata": {
+    "total_duration_seconds": 48.3,
+    "cost_usd": 0.0494,
+    "token_usage": { ... }
+  },
+  "langsmith_trace_url": "https://smith.langchain.com/..."
+}
+```
+
+### GET /api/analyze/stream
+
+**Real-time SSE streaming** (recommended):
+
+```
+GET /api/analyze/stream?x_brand=Uber&y_market=Dog%20Walkers
+Accept: text/event-stream
+```
+
+**SSE Events**:
 ```
 event: agent_started
-data: {"agent": "analyst", "status": "running"}
-
-event: tool_called
-data: {"tool": "tavily_search", "query": "..."}
+data: {"agent": "analyst"}
 
 event: agent_completed
 data: {"agent": "analyst", "result": {...}}
 
-event: loop_triggered
-data: {"reason": "weak analysis", "iteration": 2}
+event: coordination_decision
+data: {"action": "proceed_to_synthesis"}
 
-event: analysis_completed
-data: {"final_plan": {...}, "trace_url": "..."}
+event: complete
+data: {"viability_score": 68, "metadata": {...}}
 ```
 
-## Evaluation & Testing
+### GET /health
 
-```bash
-# Run evaluation suite
-python -m pytest tests/evaluation/
+Health check endpoint:
 
-# Run specific metric
-python -m pytest tests/evaluation/test_gtm_quality.py
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "langsmith_enabled": true
+}
 ```
 
-## Deployment
+---
 
-### Railway
+## 🧪 Testing & Evaluation
+
+### Run Tests
 
 ```bash
-# Install Railway CLI
+# All tests
+pytest
+
+# Specific module
+pytest tests/agents/test_analyst.py
+
+# With coverage
+pytest --cov=src tests/
+```
+
+### Evaluation Datasets
+
+Located in `tests/evaluation/datasets/`:
+
+- `test_ideas.json` - Curated test cases
+- `edge_cases.json` - Challenging scenarios
+- `expected_outputs.json` - Ground truth
+
+### Run Evaluation
+
+```bash
+python -m pytest tests/evaluation/ -v
+```
+
+---
+
+## 🚢 Deployment
+
+### Railway (Recommended)
+
+1. **Install Railway CLI**:
+```bash
 npm install -g @railway/cli
+```
 
-# Login and deploy
+2. **Login & Deploy**:
+```bash
 railway login
 railway init
 railway up
 ```
 
-**Environment Variables:**
-Set all `.env` variables in Railway dashboard.
+3. **Set Environment Variables** in Railway dashboard:
+   - `OPENROUTER_API_KEY`
+   - `TAVILY_API_KEY`
+   - `LANGSMITH_API_KEY` (optional)
 
-## Troubleshooting
+4. **Frontend Deployment**:
+   - Build: `cd frontend && npm run build`
+   - Deploy `dist/` to Vercel/Netlify
+   - Set `VITE_API_URL` to Railway backend URL
 
-### "Vector store not initialized"
-→ Run `python scripts/build_vector_store.py`
-→ Ensure documents exist in `data/knowledge_base/`
-
-### "OPENROUTER_API_KEY not set"
-→ Add to `.env` file
-→ Restart application
-
-### "Tavily API rate limit exceeded"
-→ Check your Tavily plan limits
-→ Add caching to reduce API calls
-
-### JSON parsing errors
-→ Check LLM temperature (lower = more structured)
-→ Review agent prompt format instructions
-
-## Documentation
-
-- [Implementation Proposal](./IMPLEMENTATION_PROPOSAL.md) - Detailed design doc
-- [Implementation Status](./IMPLEMENTATION_STATUS.md) - Current progress
-- [Quick Start Guide](./QUICKSTART.md) - Development guide
-- [Observability Guide](./docs/observability_guide.md) - Traces, logs, metrics
-- [Architecture Guide](./docs/architecture.md) - System design
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Support
-
-- Issues: GitHub Issues
-- Documentation: `/docs` directory
-- Examples: `/tests/evaluation/datasets`
+See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for details.
 
 ---
 
-**Built with**: FastAPI, LangGraph, OpenRouter, Tavily, FAISS, OpenTelemetry, React
+## 🐛 Troubleshooting
 
-**Observability**: Every request traced, logged, and metered for production debugging
+### "Vector store not initialized"
+```bash
+# Build vector store
+python scripts/build_vector_store.py
+
+# Verify documents exist
+ls data/knowledge_base/
+```
+
+### "OPENROUTER_API_KEY not set"
+```bash
+# Add to .env
+echo "OPENROUTER_API_KEY=your_key" >> .env
+
+# Restart app
+```
+
+### Frontend shows blank page
+- Check browser console for errors
+- Open Debug Panel (🐛 button bottom-right)
+- Check ErrorBoundary for React crashes
+- Verify backend is running
+
+### SSE connection fails
+- Ensure backend CORS is configured
+- Check network tab for streaming response
+- Verify `/api/analyze/stream` endpoint accessible
+
+### Cost is higher than expected
+- Check token usage in response metadata
+- Verify you're using GPT-4o (not GPT-4)
+- Consider reducing max_tokens in agent prompts
+
+---
+
+## 📚 Documentation
+
+- **[RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md)** - Deployment guide
+- **[CLAUDE.md](./CLAUDE.md)** - Project instructions for development
+- **Frontend README**: `frontend/README.md`
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Add tests: `pytest tests/`
+5. Commit: `git commit -m 'Add amazing feature'`
+6. Push: `git push origin feature/amazing-feature`
+7. Open a Pull Request
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](./LICENSE) for details
+
+---
+
+## 🙏 Acknowledgments
+
+**Built with**:
+- [LangGraph](https://github.com/langchain-ai/langgraph) - Multi-agent orchestration
+- [OpenRouter](https://openrouter.ai/) - LLM API gateway
+- [Tavily](https://tavily.com/) - AI-optimized search
+- [LangSmith](https://smith.langchain.com/) - LLM observability
+- [FastAPI](https://fastapi.tiangolo.com/) - Backend framework
+- [React](https://react.dev/) + [Vite](https://vitejs.dev/) - Frontend
+- [FAISS](https://github.com/facebookresearch/faiss) - Vector search
+
+---
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/yourusername/startup-analyzer/issues)
+- **Documentation**: This README + inline code docs
+- **Examples**: `tests/evaluation/datasets/`
+
+---
+
+**⭐ Star this repo if you find it useful!**
+
+**Built to showcase production-grade multi-agent systems with comprehensive observability.**
